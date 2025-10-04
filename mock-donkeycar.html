@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DonkeyCar RC — More / Approfondimento</title>
+  <meta name="description" content="Mock di progetto per RC‑Car con DonkeyCar: acquisizione dati, training FastAI/PyTorch, guida autonoma, simulatore RL, telemetria web." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Page‑specific tweaks */
+    .hero.hero-slim{padding:48px 0 8px}
+    .grid.cols-3{grid-template-columns:repeat(12,1fr)}
+    .grid.cols-3>.card{grid-column:span 4}
+    @media (max-width:880px){.grid.cols-3>.card{grid-column:span 12}}
+    .mini{font-size:12px;color:var(--muted)}
+    .lang-switch{display:flex;gap:6px}
+
+    /* Media gallery */
+    .gallery{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .gallery figure{grid-column:span 6;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;margin:0}
+    .gallery figure img,.gallery figure video{display:block;width:100%;height:auto}
+    .gallery figure figcaption{padding:10px 12px;color:var(--muted);font-size:13px}
+    @media (max-width:880px){.gallery figure{grid-column:span 12}}
+
+    /* Lightbox */
+    #lightbox{border:none;border-radius:18px;max-width:min(1100px,96%);width:auto;padding:0;background:var(--card);color:var(--text);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+    #lightbox::backdrop{background:rgba(0,0,0,.6)}
+    #lightbox .lb-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+    #lightbox .lb-body{padding:0}
+    #lightbox .lb-body img,#lightbox .lb-body video{display:block;width:100%;height:auto}
+    #lightbox .lb-cap{padding:10px 14px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,.12)}
+    #lb-close{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px}
+  </style>
+</head>
+<body>
+  <header class="container header">
+    <div class="logo"><div class="mark"><span class="dot"></span></div><div>DonkeyCar RC</div></div>
+    <nav class="topnav" aria-label="secondary">
+      <a href="index.html" data-i18n="nav.back">Home</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero hero-slim">
+      <div>
+        <span class="badge" data-i18n="hero.badge">ML • Robotica • Visione • RL</span>
+        <h1 data-i18n="hero.title">RC‑Car con DonkeyCar — Guida autonoma Vision Based</h1>
+        <p class="lead" data-i18n="hero.lead">Modellino RC con Raspberry Pi, camera, servo‑driver e motore brushless: pipeline DonkeyCar per raccolta dati, training (FastAI/PyTorch) e guida autonoma. Simulatore con algoritmi di Reinforcement Learning per test sicuri.</p>
+        <div class="cta">
+          <a class="btn" href="#flussi" data-i18n="hero.cta.flows">Vedi i flussi</a>
+          <a class="btn secondary" href="#architettura" data-i18n="hero.cta.arch">Architettura</a>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="overview" class="section">
+      <h2 data-i18n="overview.title">Overview</h2>
+      <p class="muted" data-i18n="overview.text">Obiettivi: raccolta dati on‑board, training supervisionato/controllato e guida autonoma robusta su pista indoor. Punti chiave: UI web locale con stream camera e controlli, calibrazioni sterzo/accelerazione, uso del simulatore per iterare rapidamente.</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.data.subtitle">Data</div>
+            <div class="title" data-i18n="overview.cards.data.title">Acquisizione</div>
+            <p class="muted" data-i18n="overview.cards.data.body">Frames camera + comandi utente → tubi di dati DonkeyCar per training; annotazioni e metadati di corsa.</p>
+            <span class="pill">Dataset</span> <span class="pill">160×120</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.train.subtitle">Training</div>
+            <div class="title" data-i18n="overview.cards.train.title">FastAI/PyTorch</div>
+            <p class="muted" data-i18n="overview.cards.train.body">Modelli CNN leggeri per sterzo/throttle. Ottimizzatori Adam/SGD/RMSprop; validazione e export del modello.</p>
+            <span class="pill">Supervised</span> <span class="pill">Augment</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.drive.subtitle">Drive</div>
+            <div class="title" data-i18n="overview.cards.drive.title">Autonomo</div>
+            <p class="muted" data-i18n="overview.cards.drive.body">Inference real‑time su Raspberry Pi, attuazione via ESC e servo. Telemetria e overlay rotta.</p>
+            <span class="pill">PWM</span> <span class="pill">PCA9685</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="flussi" class="section">
+      <h2 data-i18n="flows.title">Flussi utente</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Setup & calibrazione">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#3b82f6"/>
+              <rect x="56" y="60" width="528" height="72" rx="10" fill="#141a2a"/>
+              <rect x="56" y="148" width="250" height="150" rx="10" fill="#141a2a"/>
+              <rect x="334" y="148" width="250" height="150" rx="10" fill="#141a2a"/>
+              <text x="66" y="104" font-family="Inter" font-size="16" fill="#8b93a7">Calibrazione sterzo/accelerazione</text>
+              <text x="66" y="180" font-family="Inter" font-size="16" fill="#8b93a7">Steering chart</text>
+              <text x="344" y="180" font-family="Inter" font-size="16" fill="#8b93a7">Throttle curve</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.setup.title">Setup & calibrazione</div>
+            <p class="muted" data-i18n="flows.cards.setup.body">Comandi DonkeyCar per calibrare angolo di sterzo e risposta del motore. Steering chart e test guidati.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Raccolta & augment">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#22d3ee"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Stream camera + recording</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.collect.title">Raccolta dati & Augment</div>
+            <p class="muted" data-i18n="flows.cards.collect.body">UI web locale per controlli, anteprima camera e registrazione. Augment per robustezza (luminosità, flip, rumore).</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Training & valutazione">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#a78bfa"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">FastAI/PyTorch • Adam/SGD/RMSprop</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.train.title">Training & valutazione</div>
+            <p class="muted" data-i18n="flows.cards.train.body">Split train/val, metriche di guida e salvataggio modello. Iterazione veloce con simulatori.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Autonomous drive">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#34d399"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Overlay rotta • Telemetria</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.drive.title">Guida autonoma & telemetria</div>
+            <p class="muted" data-i18n="flows.cards.drive.body">Attuazione via ESC/servo, limiti di sicurezza e telemetria in tempo reale con UI web.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="media" class="section">
+      <h2 data-i18n="media.title">Media</h2>
+      <p class="muted" data-i18n="media.desc">GIF e immagini del modellino, della UI web e del simulatore. Clicca per ingrandire.</p>
+      <div class="gallery" id="gallery"></div>
+    </section>
+
+    <section id="architettura" class="section">
+      <h2 data-i18n="arch.title">Architettura (alto livello)</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 12">
+          <div class="pad">
+            <div class="title" data-i18n="arch.chain.title">Pipeline</div>
+            <p class="muted" data-i18n="arch.chain.body">Camera → Pre‑processing → CNN → Predizione sterzo/throttle → PCA9685/ESC/Servo. <span class="mini">Manage.py: modalità di guida (manuale/autonoma/mista); Calibrate.py: chart sterzo/acceleratore; Training.py: addestramento ed export.</span></p>
+            <div class="tags"><span class="tag">PyTorch</span> <span class="tag">FastAI</span> <span class="tag">PWM</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="hardware" class="section">
+      <h2 data-i18n="hw.title">Hardware</h2>
+      <dl class="specs">
+        <dt data-i18n="hw.items.pi.title">Raspberry Pi 3B+</dt>
+        <dd data-i18n="hw.items.pi.body">Controller principale, interfaccia cam e rete; potenza sufficiente per inference in locale e UI web.</dd>
+        <dt data-i18n="hw.items.cam.title">Pi Camera</dt>
+        <dd data-i18n="hw.items.cam.body">Acquisizione video per dataset e navigazione; risoluzioni tipiche 160×120 / 224×224.</dd>
+        <dt data-i18n="hw.items.pca.title">PCA9685 Servo‑Driver</dt>
+        <dd data-i18n="hw.items.pca.body">Controllo PWM a 12‑bit per servo sterzo e ESC brushless; i²c.</dd>
+        <dt data-i18n="hw.items.esc.title">ESC + Motore brushless</dt>
+        <dd data-i18n="hw.items.esc.body">Trazione efficiente e risposta lineare; curva throttle configurabile.</dd>
+        <dt data-i18n="hw.items.servo.title">Servo sterzo</dt>
+        <dd data-i18n="hw.items.servo.body">Sterzo preciso; offset/limiti calibrati via chart.</dd>
+        <dt data-i18n="hw.items.frame.title">Telaio 3D & alimentazione</dt>
+        <dd data-i18n="hw.items.frame.body">Chassis stampato in 3D, pacco batterie, cablaggi sicuri e interruttore di emergenza.</dd>
+      </dl>
+    </section>
+
+    <section id="software" class="section">
+      <h2 data-i18n="sw.title">Software</h2>
+      <ul class="muted">
+        <li data-i18n="sw.items.dk"><strong>DonkeyCar (Python)</strong>: tubi dati, attuazione, modalità di guida e UI web.</li>
+        <li data-i18n="sw.items.train"><strong>Training (FastAI/PyTorch)</strong>: addestramento CNN, ottimizzatori Adam/SGD/RMSprop, metriche.</li>
+        <li data-i18n="sw.items.cal"><strong>Calibrations</strong>: steering/throttle chart e test controllati.</li>
+        <li data-i18n="sw.items.sim"><strong>Simulator & RL</strong>: tracciati virtuali, iterazioni rapide e algoritmi DQN/Double‑DQN.</li>
+      </ul>
+    </section>
+
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <dialog id="lightbox">
+    <div class="lb-head">
+      <strong id="lb-title">DonkeyCar RC - Bachelor Degree Thesis</strong>
+      <button id="lb-close">Close</button>
+    </div>
+    <div class="lb-body">
+      <img id="lb-img" alt="" style="display:none"/>
+      <video id="lb-video" autoplay muted loop playsinline controls style="display:none"></video>
+    </div>
+    <div class="lb-cap" id="lb-cap"></div>
+  </dialog>
+
+  <script>
+  // --- Minimal i18n + gallery for this page ---
+  const I18N = {
+    it: {
+      nav: { back: 'Home' },
+      hero: { badge: 'ML • Robotica • Visione • RL', title: 'RC‑Car con DonkeyCar — Guida autonoma Vision Based', lead: 'Modellino RC con Raspberry Pi, camera, servo‑driver e motore brushless: pipeline DonkeyCar per raccolta dati, training (FastAI/PyTorch) e guida autonoma. Simulatore con algoritmi di Reinforcement Learning per test sicuri.', cta: { flows: 'Vedi i flussi', arch: 'Architettura' } },
+      overview: {
+        title: 'Overview',
+        text: 'Obiettivi: raccolta dati on‑board, training supervisionato/controllato e guida autonoma robusta su pista indoor. Punti chiave: UI web locale con stream camera e controlli, calibrazioni sterzo/accelerazione, uso del simulatore per iterare rapidamente.',
+        cards: {
+          data: { subtitle: 'Data', title: 'Acquisizione', body: 'Frames camera + comandi utente → tubi di dati DonkeyCar per training; annotazioni e metadati di corsa.' },
+          train: { subtitle: 'Training', title: 'FastAI/PyTorch', body: 'Modelli CNN leggeri per sterzo/throttle. Ottimizzatori Adam/SGD/RMSprop; validazione e export del modello.' },
+          drive: { subtitle: 'Drive', title: 'Autonomo', body: 'Inference real‑time su Raspberry Pi, attuazione via ESC e servo. Telemetria e overlay rotta.' }
+        }
+      },
+      flows: {
+        title: 'Flussi utente',
+        cards: {
+          setup: { title: 'Setup & calibrazione', body: 'Comandi DonkeyCar per calibrare angolo di sterzo e risposta del motore. Steering chart e test guidati.' },
+          collect: { title: 'Raccolta dati & Augment', body: 'UI web locale per controlli, anteprima camera e registrazione. Augment per robustezza (luminosità, flip, rumore).' },
+          train: { title: 'Training & valutazione', body: 'Split train/val, metriche di guida e salvataggio modello. Iterazione veloce con simulatori.' },
+          drive: { title: 'Guida autonoma & telemetria', body: 'Attuazione via ESC/servo, limiti di sicurezza e telemetria in tempo reale con UI web.' }
+        }
+      },
+      arch: { title: 'Architettura (alto livello)', chain: { title: 'Pipeline', body: 'Camera → Pre‑processing → CNN → Predizione sterzo/throttle → PCA9685/ESC/Servo. Manage.py: modalità di guida (manuale/autonoma/mista); Calibrate.py: chart sterzo/acceleratore; Training.py: addestramento ed export.' } },
+      hw: { title: 'Hardware', items: { pi: { title: 'Raspberry Pi 3B+', body: 'Controller principale, interfaccia cam e rete; potenza sufficiente per inference in locale e UI web.' }, cam: { title: 'Pi Camera', body: 'Acquisizione video per dataset e navigazione; risoluzioni tipiche 160×120 / 224×224.' }, pca: { title: 'PCA9685 Servo‑Driver', body: 'Controllo PWM a 12‑bit per servo sterzo e ESC brushless; i²c.' }, esc: { title: 'ESC + Motore brushless', body: 'Trazione efficiente e risposta lineare; curva throttle configurabile.' }, servo: { title: 'Servo sterzo', body: 'Sterzo preciso; offset/limiti calibrati via chart.' }, frame: { title: 'Telaio 3D & alimentazione', body: 'Chassis stampato in 3D, pacco batterie, cablaggi sicuri e interruttore di emergenza.' } } },
+      sw: { title: 'Software', items: { dk: '<strong>DonkeyCar (Python)</strong>: tubi dati, attuazione, modalità di guida e UI web.', train: '<strong>Training (FastAI/PyTorch)</strong>: addestramento CNN, ottimizzatori Adam/SGD/RMSprop, metriche.', cal: '<strong>Calibrations</strong>: steering/throttle chart e test controllati.', sim: '<strong>Simulator & RL</strong>: tracciati virtuali, iterazioni rapide e algoritmi DQN/Double‑DQN.' } },
+      data: { title: 'Dati & Metriche', body: 'Split train/val, tracking dei tempi sul giro, distanza dal centro corsia e tassi di intervento manuale. Possibilità di confronti simulatore ↔ reale per tuning.' },
+      media: { title: 'Media', desc: 'GIF e immagini del modellino, della UI web e del simulatore. Clicca per ingrandire.' },
+      footer: { tail: 'More about DonkeyCar RC' }
+    },
+    en: {
+      nav: { back: 'Home' },
+      hero: { badge: 'ML • Robotics • Vision • RL', title: 'RC‑Car with DonkeyCar — Vision‑based autonomy', lead: 'RC model with Raspberry Pi, camera, servo driver and brushless motor: DonkeyCar pipeline for data collection, training (FastAI/PyTorch) and autonomous driving. Simulator with Reinforcement Learning algorithms for safe iteration.', cta: { flows: 'See flows', arch: 'Architecture' } },
+      overview: {
+        title: 'Overview',
+        text: 'Goals: on‑board data capture, supervised/controlled training and robust indoor track autonomy. Key points: local web UI with camera stream & controls, steering/throttle calibrations, simulator for fast iteration.',
+        cards: {
+          data: { subtitle: 'Data', title: 'Acquisition', body: 'Camera frames + user commands → DonkeyCar tubs for training; run metadata & annotations.' },
+          train: { subtitle: 'Training', title: 'FastAI/PyTorch', body: 'Lightweight CNNs for steering/throttle. Optimizers Adam/SGD/RMSprop; validation and model export.' },
+          drive: { subtitle: 'Drive', title: 'Autonomous', body: 'Real‑time inference on Raspberry Pi, actuation via ESC and servo. Telemetry and route overlay.' }
+        }
+      },
+      flows: {
+        title: 'User flows',
+        cards: {
+          setup: { title: 'Setup & calibration', body: 'DonkeyCar commands to calibrate steering angle and motor response. Steering chart and guided tests.' },
+          collect: { title: 'Data capture & Augment', body: 'Local web UI for controls, camera preview and recording. Augmentations for robustness (brightness, flip, noise).' },
+          train: { title: 'Training & evaluation', body: 'Train/val split, driving metrics and model export. Quick iteration with simulators.' },
+          drive: { title: 'Autonomous drive & telemetry', body: 'ESC/servo actuation, safety limits and real‑time telemetry with web UI.' }
+        }
+      },
+      arch: { title: 'Architecture (high level)', chain: { title: 'Pipeline', body: 'Camera → Pre‑processing → CNN → Steering/throttle prediction → PCA9685/ESC/Servo. Manage.py: drive modes (manual/autonomous/mixed); Calibrate.py: steering/throttle charts; Training.py: training and export.' } },
+      hw: { title: 'Hardware', items: { pi: { title: 'Raspberry Pi 3B+', body: 'Main controller, camera & networking; enough for on‑device inference and web UI.' }, cam: { title: 'Pi Camera', body: 'Video capture for dataset & navigation; typical 160×120 / 224×224.' }, pca: { title: 'PCA9685 Servo Driver', body: '12‑bit PWM for steering servo and brushless ESC; i²c.' }, esc: { title: 'ESC + Brushless motor', body: 'Efficient traction with linear response; configurable throttle curve.' }, servo: { title: 'Steering servo', body: 'Accurate steering; offsets/limits calibrated via chart.' }, frame: { title: '3D frame & power', body: '3D‑printed chassis, battery pack, safe wiring and kill‑switch.' } } },
+      sw: { title: 'Software', items: { dk: '<strong>DonkeyCar (Python)</strong>: data tubs, actuation, drive modes and web UI.', train: '<strong>Training (FastAI/PyTorch)</strong>: CNN training, Adam/SGD/RMSprop optimizers, metrics.', cal: '<strong>Calibrations</strong>: steering/throttle charts & controlled tests.', sim: '<strong>Simulator & RL</strong>: virtual tracks, fast iteration and DQN/Double‑DQN algorithms.' } },
+      data: { title: 'Data & Metrics', body: 'Train/val split, lap‑time tracking, lane‑center deviation and manual takeover rates. Simulator ↔ real comparisons for tuning.' },
+      media: { title: 'Media', desc: 'GIFs and images of the model, web UI and simulator. Click to enlarge.' },
+      footer: { tail: 'More about DonkeyCar RC' }
+    }
+  };
+
+  // --- Media items (replace src with your files) ---
+  const MEDIA = [
+    { type: 'img', src: 'media/donkey-web.gif', w: 1280, h: 720, i18n: { it: { cap: 'UI web: anteprima camera & controlli' }, en: { cap: 'Web UI: camera preview & controls' } } },
+    { type: 'img', src: 'media/dokey-simulation.gif', w: 1280, h: 720, i18n: { it: { cap: 'Simulatore' }, en: { cap: 'Simulator' } } },
+    { type: 'img', src: 'media/donkey-car.png', w: 1280, h: 720, i18n: { it: { cap: 'Prototipo' }, en: { cap: 'Prototype' } } },
+    { type: 'img', src: 'media/simulation.gif', w: 1280, h: 720, i18n: { it: { cap: 'Guida autonoma su pista simulata' }, en: { cap: 'Autonomous drive on simulation track' } } },
+    // Example for video: { type: 'video', src: 'media/donkey-lap.mp4', w:1920, h:1080, i18n:{it:{cap:'Hot‑lap in autonomia'}, en:{cap:'Autonomous hot‑lap'}} }
+  ];
+
+  function $all(sel, root=document){ return [...root.querySelectorAll(sel)]; }
+  function applyI18N(lang){
+    const dict = I18N[lang];
+    document.documentElement.setAttribute('lang', lang);
+    $all('[data-i18n]').forEach(el => {
+      const path = el.getAttribute('data-i18n').split('.');
+      let val = dict; for(const k of path){ val = val?.[k]; }
+      if(typeof val === 'string'){ el.innerHTML = val; }
+    });
+  }
+
+  function renderGallery(lang){
+    const g = document.getElementById('gallery');
+    g.innerHTML = '';
+    MEDIA.forEach((m, idx)=>{
+      const fig = document.createElement('figure');
+      fig.innerHTML = `
+        ${m.type==='img' ? `<img src="${m.src}" alt="${m.i18n[lang].cap}" loading="lazy" width="${m.w}" height="${m.h}">` : `<video src="${m.src}" muted playsinline preload="metadata"></video>`}
+        <figcaption>${m.i18n[lang].cap}</figcaption>`;
+      fig.addEventListener('click', ()=> openLightbox(idx, lang));
+      g.appendChild(fig);
+    });
+  }
+
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbVideo = document.getElementById('lb-video');
+  const lbCap = document.getElementById('lb-cap');
+  document.getElementById('lb-close').addEventListener('click', ()=> lb.close());
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lb.open) lb.close(); });
+
+  function openLightbox(index, lang){
+    const m = MEDIA[index];
+    lbImg.style.display = 'none';
+    lbVideo.style.display = 'none';
+    if(m.type==='img'){
+      lbImg.src = m.src; lbImg.alt = m.i18n[lang].cap; lbImg.style.display='block';
+    } else {
+      lbVideo.src = m.src; lbVideo.style.display='block'; lbVideo.play();
+    }
+    lbCap.textContent = m.i18n[lang].cap;
+    document.getElementById('lb-title').textContent = 'DonkeyCar RC';
+    lb.showModal();
+  }
+
+  function setLang(lang){
+    localStorage.setItem('donkeycar_lang', lang);
+    document.getElementById('lang-it').setAttribute('aria-pressed', String(lang==='it'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang==='en'));
+    applyI18N(lang);
+    renderGallery(lang);
+  }
+  document.getElementById('lang-it').addEventListener('click', ()=> setLang('it'));
+  document.getElementById('lang-en').addEventListener('click', ()=> setLang('en'));
+
+  // Init
+  (function(){
+    document.getElementById('y').textContent = new Date().getFullYear();
+    const lang = localStorage.getItem('donkeycar_lang') || (localStorage.getItem('lang')||'it');
+    setLang(lang);
+  })();
+  </script>
+</body>
+</html>

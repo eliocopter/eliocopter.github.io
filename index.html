@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio • Euplio Lisi</title>
+  <meta name="description" content="Portfolio tecnico: IoT, ML, Web, Web3. Progetti: Crypto MCP, SmartFarm, RC‑Car DonkeyCar, ESP32 / Relè, siti web." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container header">
+    <div class="logo" aria-label="home">
+      <div class="mark"><span class="dot"></span></div>
+      <div>Euplio Lisi</div>
+    </div>
+    <nav class="topnav" aria-label="primary">
+      <a href="#progetti" data-i18n="nav.projects">Progetti</a>
+      <a href="#about" data-i18n="nav.about">About</a>
+      <a href="#contatti" data-i18n="nav.contact">Contatti</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" data-lang="it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero">
+      <div>
+        <span class="badge" data-i18n="hero.badge">IoT • ML • Web • Web3</span>
+        <h1 data-i18n="hero.title">Portfolio tecnico con casi studio reali</h1>
+        <p class="lead" data-i18n="hero.lead">Una selezione dei miei lavori: agenti di trading (Transformer Actor–Critic), sistemi IoT agricoli (RTK, MQTT), robotica amatoriale e prodotti web in produzione. Ogni progetto ha repo/documentazione e mock di interfaccia.</p>
+        <div class="cta">
+          <a class="btn" href="#progetti" data-i18n="hero.cta.explore">Esplora i progetti</a>
+          <a class="btn secondary" href="#cv" data-i18n="hero.cta.cv">Scarica CV</a>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="progetti" class="section">
+      <h2 data-i18n="projects.title">Progetti</h2>
+      <p class="muted" data-i18n="projects.desc">Filtra per area o usa la ricerca. Premi invio per aprire i dettagli del progetto evidenziato.</p>
+      <div class="controls">
+        <button class="chip" data-filter="all" aria-pressed="true" data-i18n="filters.all">Tutti</button>
+        <button class="chip" data-filter="iot" aria-pressed="false">IoT</button>
+        <button class="chip" data-filter="ml" aria-pressed="false">ML</button>
+        <button class="chip" data-filter="web" aria-pressed="false">Web</button>
+        <button class="chip" data-filter="web3" aria-pressed="false">Web3</button>
+        <div class="search">
+          <label class="muted" for="search" data-i18n="search.label">Cerca</label>
+          <input id="search" type="search" placeholder="es. RTK, Actor–Critic, MQTT, e‑commerce..." aria-label="Cerca progetti" data-i18n-placeholder="search.placeholder">
+        </div>
+      </div>
+
+      <div class="grid" id="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="about" class="section">
+      <h2 data-i18n="about.title">About</h2>
+      <p class="muted" data-i18n="about.text">Ingegnere informatico specializzato in IoT, sicurezza e ML. Progetto soluzioni end-to-end: firmware ESP32/Raspberry, MQTT/TLS, Android/Flutter, backend Java/Spring & Python con streaming gRPC/WebSocket, e frontend React/TS. Porto i prototipi sul campo (RTK, sensori, attuatori) e li rendo prodotti: telemetria, policy di sicurezza, UX chiara.</p>
+    </section>
+
+    <section id="contatti" class="section">
+      <h2 data-i18n="contact.title">Contatti</h2>
+      <p class="muted">
+        <strong data-i18n="contact.emailLabel">Email</strong>: <span class="kbd"><a href=mailto:euplio.lisi.openc@gmail.com> euplio.lisi.openc@gmail.com</a></span>
+        • <strong data-i18n="contact.linkedinLabel">LinkedIn</strong>: <span class="kbd"><a href='https://www.linkedin.com/in/euplio-lisi-286014262'>
+            Euplio Lisi
+        </a></span>
+      </p>
+    </section>
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <dialog id="modal">
+    <div class="modal-head">
+      <strong id="m-title">Titolo</strong>
+      <button class="close" id="m-close" data-i18n="modal.close">Chiudi</button>
+    </div>
+    <div class="modal-body">
+      <div class="muted" id="m-sub"></div>
+      <div style="margin:12px 0" id="m-tags"></div>
+      <p id="m-summary"></p>
+      <ul id="m-bullets"></ul>
+      <div class="actions" id="m-links"></div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

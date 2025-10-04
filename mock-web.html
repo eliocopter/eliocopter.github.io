@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Websites & e‑commerce — Live previews</title>
+  <meta name="description" content="Galleria di siti reali con anteprime live in iframe (quando consentito) e fallback automatici. Filtra, cambia lingua e apri in nuova scheda." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .hero.hero-slim{padding:48px 0 8px}
+    .lang-switch{display:flex;gap:6px}
+
+    .site-card{grid-column:span 12;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden}
+    .site-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+    .site-head .title{font-size:16px;margin:0}
+    .site-actions{display:flex;gap:8px;align-items:center}
+    .chip.small{padding:6px 10px;font-size:12px}
+    .view-toggle .chip{opacity:.75}
+    .view-toggle .chip[aria-pressed="true"]{opacity:1}
+
+    .frame{position:relative;background:#0e1220;height:520px}
+    .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
+    .frame .fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:16px}
+    .frame .fallback .box{border:1px dashed rgba(255,255,255,.28);border-radius:16px;padding:18px;max-width:680px}
+    .frame .toolbar{position:absolute;right:10px;bottom:10px;display:flex;gap:8px}
+
+    .tagsline{display:flex;gap:8px;flex-wrap:wrap}
+    .muted.small{font-size:12px}
+
+    @media (max-width:880px){.site-card{grid-column:span 12}.frame{height:420px}}
+  </style>
+</head>
+<body>
+  <header class="container header">
+    <div class="logo"><div class="mark"><span class="dot"></span></div><div>Web • Live</div></div>
+    <nav class="topnav" aria-label="secondary">
+      <a href="index.html" data-i18n="nav.back">Home</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero hero-slim">
+      <div>
+        <span class="badge" data-i18n="hero.badge">Web • e‑commerce • SSR/CSR</span>
+        <h1 data-i18n="hero.title">Siti reali — anteprime live</h1>
+        <p class="lead" data-i18n="hero.lead">Dove possibile, il sito originale è incorporato in <span class="kbd">iframe</span>. Alcuni siti bloccano l’embed tramite header di sicurezza (<span class="kbd">X‑Frame‑Options</span> / <span class="kbd">Content‑Security‑Policy</span>): in quel caso mostro un fallback con link. Clicca su un filtro per iniziare</p>
+      </div>
+    </section>
+
+    <section class="section" id="controls">
+      <div class="controls">
+        <button class="chip" data-filter="all" aria-pressed="true" data-i18n="filters.all">Tutti</button>
+        <button class="chip" data-filter="sfumature" aria-pressed="false">Sfumature SRL</button>
+        <button class="chip" data-filter="freelance" aria-pressed="false">Freelance</button>
+        <button class="chip" data-filter="web3" aria-pressed="false">Web3/Crypto</button>
+        <div class="search">
+          <label class="muted" for="q" data-i18n="search.label">Cerca</label>
+          <input id="q" type="search" placeholder="es. WordPress, e‑commerce, vetrina…" data-i18n-placeholder="search.placeholder" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid" id="sites"></div>
+    </section>
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <script>
+  const I18N = {
+    it:{
+      nav:{back:'Home'},
+      hero:{badge:'Web • e‑commerce • SSR/CSR',title:'Siti reali — anteprime live',lead:'Dove possibile, incorporo il sito originale in iframe. Alcuni siti bloccano l’embed tramite header di sicurezza (X‑Frame‑Options / Content‑Security‑Policy): in quel caso mostro un fallback con link. Clicca su un filtro per iniziare.'},
+      filters:{all:'Tutti'},
+      search:{label:'Cerca',placeholder:'es. WordPress, e‑commerce, vetrina…'},
+      ui:{open:'Apri live',reload:'Ricarica',blocked:'Embed bloccato dal sito (X‑Frame‑Options/CSP).',offline:'Sito offline o non raggiungibile.',try:'Riprova'} ,
+      footer:{tail:'Embed live con fallback automatico'}
+    },
+    en:{
+      nav:{back:'Home'},
+      hero:{badge:'Web • e‑commerce • SSR/CSR',title:'Real websites — live previews',lead:'Where allowed, the original site is embedded in an iframe. Some sites block embedding via security headers (X‑Frame‑Options / Content‑Security‑Policy): when that happens, a fallback with a link is shown. Click on a filter to show anything.'},
+      filters:{all:'All'},
+      search:{label:'Search',placeholder:'e.g., WordPress, e‑commerce, showcase…'},
+      ui:{open:'Open live',reload:'Reload',blocked:'Embedding blocked by site (X‑Frame‑Options/CSP).',offline:'Site offline or unreachable.',try:'Retry'},
+      footer:{tail:'Live embed with automatic fallback'}
+    }
+  };
+
+  const SITES = [
+    {title:'Mochem', url:'https://www.mochem.it/', tags:['sfumature','wordpress']},
+    {title:'San Francesco SPA', url:'https://www.sanfrancescospa.it/', tags:['sfumature','corporate']},
+    {title:'Delta BKB', url:'https://www.delta-bkb.it/', tags:['sfumature','corporate']},
+    {title:'GLAM 1965', url:'https://www.glam1965.com/it/', tags:['sfumature','ecommerce']},
+    {title:'The Inglorious Mariner', url:'https://theingloriousmariner.com/it/', tags:['sfumature','ecommerce']},
+    {title:'Voluhpia', url:'https://voluhpia.com/', tags:['freelance','web3']},
+    {title:'ESP32', url:'https://eliocopter.com/', tags:['freelance','web3']},
+    {title:'Lisi Design', url:'https://lisidesign.net/', tags:['freelance','portfolio']},
+    {title:'Fratelli Cetera', url:'https://fratellicetera.it/', tags:['freelance','corporate']},
+    {title:'EL6', url:'https://el6.it/', tags:['freelance','corporate']},
+    {title:'La Comminter SRL', url:'https://lacommintersrl.com/', tags:['freelance','corporate']}
+    // NOTE: "eliocopter.cpm" sembra un refuso. Aggiungi il dominio corretto e comparirà qui.
+  ];
+
+  const state = { lang: localStorage.getItem('websites_lang') || (localStorage.getItem('lang')||'it'), filter:'all', q:'' };
+  function $all(sel, root=document){ return [...root.querySelectorAll(sel)]; }
+  function t(path){ const dict=I18N[state.lang]; return path.split('.').reduce((a,k)=>a&&a[k], dict) || path; }
+  function applyI18N(){
+    document.documentElement.setAttribute('lang', state.lang);
+    $all('[data-i18n]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n')); });
+    $all('[data-i18n-placeholder]').forEach(el=>{ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); el.setAttribute('aria-label', t(el.getAttribute('data-i18n'))||''); });
+  }
+
+  function siteCard(site){
+    const el = document.createElement('article');
+    el.className='site-card';
+    el.innerHTML = `
+      <div class="site-head">
+        <div>
+          <div class="title">${site.title}</div>
+          <div class="muted small">${new URL(site.url).host}</div>
+          <div class="tagsline">${site.tags.map(x=>`<span class='tag'>#${x}</span>`).join('')}</div>
+        </div>
+        <div class="site-actions">
+          <div class="view-toggle" role="group" aria-label="view">
+            <button class="chip small" data-view="desktop" aria-pressed="true">Desktop</button>
+            <button class="chip small" data-view="mobile" aria-pressed="false">Mobile</button>
+          </div>
+          <a class="chip small" href="${site.url}" target="_blank" rel="noopener">${t('ui.open')}</a>
+          <button class="chip small" data-reload></button>
+        </div>
+      </div>
+      <div class="frame">
+        <iframe title="${site.title} preview" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="fallback" hidden>
+          <div class="box">
+            <div class="title" style="margin-bottom:6px">${site.title}</div>
+            <p class="muted"></span></p>
+            <div class="actions" style="justify-content:center">
+              <a class="btn small" href="${site.url}" target="_blank" rel="noopener">${t('ui.open')}</a>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <span class="pill" style="background:rgba(124,92,255,.18);border:1px solid rgba(124,92,255,.3)">Live</span>
+        </div>
+      </div>`;
+
+    const iframe = el.querySelector('iframe');
+    const fallback = el.querySelector('.fallback');
+    function load(){
+      fallback.hidden = true; iframe.hidden = false;
+      // Avvio con URL
+      iframe.src = site.url;
+      // Se dopo 3.2s non ha emesso 'load', assumo blocco
+      let done=false;
+      const to = setTimeout(()=>{ if(!done){ fallback.hidden=false; iframe.hidden=true; } }, 3200);
+      iframe.addEventListener('load', ()=>{ done=true; clearTimeout(to); fallback.hidden=true; iframe.hidden=false; }, { once:true });
+    }
+    load();
+
+    el.querySelector('[data-reload]').addEventListener('click', load);
+
+    // Switch pseudo-mobile: riduco lo zoom via CSS transform
+    const desktopBtn = el.querySelector('[data-view="desktop"]');
+    const mobileBtn = el.querySelector('[data-view="mobile"]');
+    function setView(mobile){
+      desktopBtn.setAttribute('aria-pressed', String(!mobile));
+      mobileBtn.setAttribute('aria-pressed', String(mobile));
+      if(mobile){
+        iframe.style.transform = 'scale(0.5)';
+        iframe.style.transformOrigin = 'top left';
+        iframe.style.width = '780px'; // ~390px @0.5
+        iframe.style.height = '1040px'; // spazio extra per scroll
+      } else {
+        iframe.style.transform = 'none';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+      }
+    }
+    desktopBtn.addEventListener('click', ()=> setView(false));
+    mobileBtn.addEventListener('click', ()=> setView(true));
+
+    return el;
+  }
+
+  function render(){
+    const grid = document.getElementById('sites');
+    grid.innerHTML = '';
+    const q = state.q.toLowerCase();
+    const list = SITES.filter(s => (state.filter==='all' || s.tags.includes(state.filter)) && (!q || (s.title+s.url+s.tags.join(' ')).toLowerCase().includes(q)));
+    if(!list.length){
+      const empty = document.createElement('div');
+      empty.className='muted'; empty.style.gridColumn='span 12';
+      empty.textContent = state.lang==='it' ? 'Nessun risultato.' : 'No results.';
+      grid.appendChild(empty); return;
+    }
+    list.forEach(s => grid.appendChild(siteCard(s)));
+  }
+
+  function setLang(lang){ state.lang=lang; localStorage.setItem('websites_lang', lang);
+    document.getElementById('lang-it').setAttribute('aria-pressed', String(lang==='it'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang==='en'));
+    applyI18N(); render(); }
+
+  document.getElementById('lang-it').addEventListener('click', ()=> setLang('it'));
+  document.getElementById('lang-en').addEventListener('click', ()=> setLang('en'));
+
+  $all('.controls .chip').forEach(ch => ch.addEventListener('click', ()=>{
+    $all('.controls .chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    ch.setAttribute('aria-pressed', 'true');
+    state.filter = ch.dataset.filter || 'all'; render();
+  }));
+  document.getElementById('q').addEventListener('input', (e)=>{ state.q=e.target.value; render(); });
+
+  (function init(){
+    document.getElementById('y').textContent = new Date().getFullYear();
+    applyI18N(); setLang(state.lang); // triggers render
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gate Relay — More / Approfondimento</title>
+  <meta name="description" content="Mock di progetto per Gate Relay: ESP32 + MQTT/TLS + Web App modulare a 4 relè, policy di sicurezza, logging e OTA." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Page‑specific tweaks */
+    .hero.hero-slim{padding:48px 0 8px}
+    .grid.cols-3{grid-template-columns:repeat(12,1fr)}
+    .grid.cols-3>.card{grid-column:span 4}
+    @media (max-width:880px){.grid.cols-3>.card{grid-column:span 12}}
+    .mini{font-size:12px;color:var(--muted)}
+    .lang-switch{display:flex;gap:6px}
+
+    /* Media gallery */
+    .gallery{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .gallery figure{grid-column:span 6;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;margin:0}
+    .gallery figure img,.gallery figure video{display:block;width:100%;height:auto}
+    .gallery figure figcaption{padding:10px 12px;color:var(--muted);font-size:13px}
+    @media (max-width:880px){.gallery figure{grid-column:span 12}}
+
+    /* Lightbox */
+    #lightbox{border:none;border-radius:18px;max-width:min(1100px,96%);width:auto;padding:0;background:var(--card);color:var(--text);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+    #lightbox::backdrop{background:rgba(0,0,0,.6)}
+    #lightbox .lb-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+    #lightbox .lb-body{padding:0}
+    #lightbox .lb-body img,#lightbox .lb-body video{display:block;width:100%;height:auto}
+    #lightbox .lb-cap{padding:10px 14px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,.12)}
+    #lb-close{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px}
+
+    /* Spec list */
+    .specs dt{font-weight:700}
+    .specs dd{margin:0 0 10px 0;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header class="container header">
+    <div class="logo"><div class="mark"><span class="dot"></span></div><div>Gate Relay</div></div>
+    <nav class="topnav" aria-label="secondary">
+      <a href="index.html" data-i18n="nav.back">Home</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero hero-slim">
+      <div>
+        <span class="badge" data-i18n="hero.badge">IoT • MQTT • TLS • Web</span>
+        <h1 data-i18n="hero.title">Gate Relay — ESP32 + MQTT + Web App modulare (4 relè)</h1>
+        <p class="lead" data-i18n="hero.lead">Controllo remoto e locale di 4 relè indipendenti (cancello + dispositivi ausiliari). Firmware sicuro su ESP32, broker MQTT/TLS 8883, Web App con stati in tempo reale, modalità mono/bistabile, interlock e logging su cloud.</p>
+        <div class="cta">
+          <a class="btn" href="#flussi" data-i18n="hero.cta.flows">Vedi i flussi</a>
+          <a class="btn secondary" href="#architettura" data-i18n="hero.cta.arch">Architettura</a>
+        </div>
+      </div>
+      
+    </section>
+
+    <section id="overview" class="section">
+      <h2 data-i18n="overview.title">Overview</h2>
+      <p class="muted" data-i18n="overview.text">Obiettivi: controllo sicuro e affidabile di 4 uscite, UX semplice da telefono, modularità per estendere a N canali, resilienza a rete instabile. Punti chiave: interlock configurabili, policy di sicurezza (fail‑safe), OTA e log eventi.</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.channels.subtitle">Canali</div>
+            <div class="title" data-i18n="overview.cards.channels.title">4 relè indipendenti</div>
+            <p class="muted" data-i18n="overview.cards.channels.body">Mappati via topic: <span class="kbd">devices/&lt;id&gt;/relays/&lt;ch&gt;/cmd</span>. Modalità mono‑stabile (pulse, default 900 ms) o bi‑stabile (latch).</p>
+            <span class="pill">CH0..CH3</span> <span class="pill">Pulse/Latch</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.sec.subtitle">Sicurezza</div>
+            <div class="title" data-i18n="overview.cards.sec.title">TLS 8883 & Fail‑safe</div>
+            <p class="muted" data-i18n="overview.cards.sec.body">MQTT su TLS (HiveMQ Cloud, CA root in flash), Firebase Auth (JWT) per Web App, watchdog e boot‑state sicuro. Interlock e timeout automatici.</p>
+            <span class="pill">TLS</span> <span class="pill">Watchdog</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.ui.subtitle">UI</div>
+            <div class="title" data-i18n="overview.cards.ui.title">Dashboard in tempo reale</div>
+            <p class="muted" data-i18n="overview.cards.ui.body">Stato canali, scene (macro), timer, log ultimi eventi. Supporto PWA per uso mobile.</p>
+            <span class="pill">WebSocket/MQTT WS</span> <span class="pill">PWA</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="flussi" class="section">
+      <h2 data-i18n="flows.title">Flussi utente</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pairing & profili">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#3b82f6"/>
+              <rect x="56" y="60" width="528" height="72" rx="10" fill="#141a2a"/>
+              <rect x="56" y="148" width="528" height="150" rx="10" fill="#141a2a"/>
+              <text x="66" y="104" font-family="Inter" font-size="16" fill="#8b93a7">Pairing dispositivo</text>
+              <text x="66" y="190" font-family="Inter" font-size="16" fill="#8b93a7">Profili & autorizzazioni</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.pair.title">Pairing & accesso</div>
+            <p class="muted" data-i18n="flows.cards.pair.body">Associa il device (QR/ID), imposta ruoli e permessi (es. solo CH0 per utenti ospiti). Token rinnovabili.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pannello canali">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#22d3ee"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">CH0..CH3 • Toggle • Pulse • Timer</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.panel.title">Pannello relè</div>
+            <p class="muted" data-i18n="flows.cards.panel.body">Toggle per canale, pulsante Pulse con durata, timer e scene (es. “Arrivo a casa”: luce vialetto + cancello).</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interlock & policy">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#a78bfa"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Interlock • Boot‑state • Timeout</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.policy.title">Policy & sicurezza</div>
+            <p class="muted" data-i18n="flows.cards.policy.body">Imposta interlock (esclusione incrociata), comportamento all’avvio (tutti OFF), timeout e finestra oraria.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Log & OTA">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#34d399"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Eventi • Metriche • OTA</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.ops.title">Log & manutenzione</div>
+            <p class="muted" data-i18n="flows.cards.ops.body">Log su cloud (chi ha fatto cosa/quando), metriche uptime e aggiornamenti OTA firmati.</p>
+          </div>
+        </article>
+
+    </section>
+    <section id="media" class="section">
+      <h2 data-i18n="media.title">Media</h2>
+      <p class="muted" data-i18n="media.desc">Screenshot della Web App. Clicca per ingrandire.</p>
+      <div class="gallery" id="gallery"></div>
+    </section>
+    <section id="architettura" class="section">
+      <h2 data-i18n="arch.title">Architettura (alto livello)</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 12">
+          <div class="pad">
+            <div class="title" data-i18n="arch.chain.title">Vista di contesto</div>
+            <p class="muted" data-i18n="arch.chain.body">Web App (Firebase Auth/Firestore) ↔ Firebase Functions (logica: scene/timer, ACL, config) ↔ (opz.) WebSocket/MQTT‑WS per stato. Firebase Functions ↔ Broker MQTT/TLS 8883 (HiveMQ Cloud). Dispositivo ESP32 ↔ Broker (QoS 1/2, LWT). Topic: <span class="kbd">devices/&lt;id&gt;/relays/&lt;ch&gt;/cmd|state</span>, <span class="kbd">devices/&lt;id&gt;/sys/lwt</span>, <span class="kbd">devices/&lt;id&gt;/cfg/*</span>.</p>
+            <div class="tags"><span class="tag">REST</span> <span class="tag">WebSocket</span> <span class="tag">MQTT</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="hardware" class="section">
+      <h2 data-i18n="hw.title">Hardware</h2>
+      <dl class="specs">
+        <dt data-i18n="hw.items.esp.title">ESP32 DevKit V1</dt>
+        <dd data-i18n="hw.items.esp.body">Dual‑core 240 MHz, Wi‑Fi/BLE, GPIO sufficienti per 4 relè + ingressi sensori. Watchdog e deep‑sleep.</dd>
+        <dt data-i18n="hw.items.relays.title">Scheda relè 4 canali</dt>
+        <dd data-i18n="hw.items.relays.body">Opto‑isolata, 5 V; contatti NO/NC; jumper JD‑VCC separato per isolamento.</dd>
+        <dt data-i18n="hw.items.sensors.title">Sensori di stato (opz.)</dt>
+        <dd data-i18n="hw.items.sensors.body">Finecorsa/contatti magnetici per sapere se il cancello è aperto/chiuso; mappati su topic <span class="kbd">/inputs/*</span>.</dd>
+        <dt data-i18n="hw.items.psu.title">Alimentazione</dt>
+        <dd data-i18n="hw.items.psu.body">Alimentatore 5 V stabile, protezioni e fusibili; cablaggio a norma.</dd>
+      </dl>
+    </section>
+
+    <section id="software" class="section">
+      <h2 data-i18n="sw.title">Software</h2>
+      <ul class="muted">
+        <li data-i18n="sw.items.fw"><strong>Firmware (Arduino/ESP‑IDF)</strong>: PubSubClient TLS 8883, riconnessioni robuste, debouncing, comando Pulse (ms) e Latch, interlock a bordo.</li>
+        <li data-i18n="sw.items.backend"><strong>Firebase Functions</strong>: regole/ruoli con Firebase Auth, mapping scene, orchestrazione comandi, update config (host MQTT) e hook audit su Firestore.</li>
+        <li data-i18n="sw.items.web"><strong>Web App</strong>: pannello CH0..CH3, editor scene, timer, log eventi e PWA.</li>
+        <li data-i18n="sw.items.ota"><strong>OTA</strong>: update firmato, canary per pochi dispositivi prima del rollout.</li>
+      </ul>
+    </section>
+
+    <section id="conn" class="section">
+      <h2 data-i18n="conn.title">Connettività & topic</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title" data-i18n="conn.topics.title">Schema MQTT</div>
+            <p class="muted" data-i18n="conn.topics.body"><span class="kbd">devices/&lt;id&gt;/relays/&lt;ch&gt;/cmd</span> → <span class="mini">payload: {mode:"pulse|latch", value:0|1, ms:900}</span><br><span class="kbd">devices/&lt;id&gt;/relays/&lt;ch&gt;/state</span> (retained)<br><span class="kbd">devices/&lt;id&gt;/cfg/mqtt</span> <span class="mini">{host,port,tls,user,pass}</span> (retained) + <span class="kbd">devices/&lt;id&gt;/cmd/reboot</span><br><span class="kbd">devices/&lt;id&gt;/cfg/*</span> per parametri runtime.</p>
+            <div class="tags"><span class="tag">QoS 1/2</span> <span class="tag">Retained</span></div>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title" data-i18n="conn.sec.title">Sicurezza</div>
+            <p class="muted" data-i18n="conn.sec.body">TLS con CA radice in flash, credenziali dedicate, ACL per topic per‑device su HiveMQ Cloud, LWT su <span class="kbd">/sys/lwt</span>, rate‑limit. Rotazione dinamica endpoint via <span class="kbd">/cfg/mqtt</span>.</p>
+            <div class="tags"><span class="tag">ACL</span> <span class="tag">LWT</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="logs" class="section">
+      <h2 data-i18n="logs.title">Dati & Log</h2>
+      <p class="muted" data-i18n="logs.body">Eventi (user, canale, azione, ms, esito), stato aggregato per dashboard, esportazioni CSV/Parquet. Opzione cloud: Firebase/Firestore oppure SQLite su backend.</p>
+    </section>
+
+
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <dialog id="lightbox">
+    <div class="lb-head">
+      <strong id="lb-title">Gate Relay</strong>
+      <button id="lb-close">Close</button>
+    </div>
+    <div class="lb-body">
+      <img id="lb-img" alt="" style="display:none"/>
+      <video id="lb-video" autoplay muted loop playsinline controls style="display:none"></video>
+    </div>
+    <div class="lb-cap" id="lb-cap"></div>
+  </dialog>
+
+  <script>
+  // --- Minimal i18n + gallery for this page ---
+  const I18N = {
+    it: {
+      nav: { back: 'Home' },
+      hero: { badge: 'IoT • MQTT • TLS • Web', title: 'Gate Relay — ESP32 + MQTT + Web App modulare (4 relè)', lead: 'Controllo remoto e locale di 4 relè indipendenti (cancello + dispositivi ausiliari). Firmware sicuro su ESP32, broker MQTT/TLS 8883 (HiveMQ Cloud), Web App su Firebase (Auth/Firestore/Functions) con stati in tempo reale, modalità mono/bistabile, interlock e logging su cloud.', cta: { flows: 'Vedi i flussi', arch: 'Architettura' } },
+      overview: {
+        title: 'Overview',
+        text: 'Obiettivi: controllo sicuro e affidabile di 4 uscite, UX semplice da telefono, modularità per estendere a N canali, resilienza a rete instabile e reconfig remoto dell’host MQTT con riavvio. Punti chiave: interlock configurabili, policy di sicurezza (fail‑safe), OTA, log eventi e logiche modificabili da Web App via Firebase Functions.',
+        cards: {
+          channels: { subtitle: 'Canali', title: '4 relè indipendenti', body: 'Mappati via topic: <span class="kbd">devices/<id>/relays/<ch>/cmd</span>. Modalità mono‑stabile (pulse, default 900 ms) o bi‑stabile (latch).' },
+          sec: { subtitle: 'Sicurezza', title: 'TLS 8883 & Fail‑safe', body: 'MQTT su TLS (CA root in flash), JWT/Key per Web App, watchdog e boot‑state sicuro. Interlock e timeout automatici.' },
+          ui: { subtitle: 'UI', title: 'Dashboard in tempo reale', body: 'Stato canali, scene (macro), timer, log ultimi eventi. Supporto PWA per uso mobile.' }
+        }
+      },
+      flows: {
+        title: 'Flussi utente',
+        cards: {
+          pair: { title: 'Pairing & accesso', body: 'Associa il device (QR/ID), imposta ruoli e permessi (es. solo CH0 per utenti ospiti). Token rinnovabili.' },
+          panel: { title: 'Pannello relè', body: 'Toggle per canale, pulsante Pulse con durata, timer e scene (es. “Arrivo a casa”: luce vialetto + cancello).' },
+          policy: { title: 'Policy & sicurezza', body: 'Imposta interlock (esclusione incrociata), comportamento all’avvio (tutti OFF), timeout e finestra oraria.' },
+          ops: { title: 'Log & manutenzione', body: 'Log su cloud (chi ha fatto cosa/quando), metriche uptime e aggiornamenti OTA firmati.' }
+        }
+      },
+      arch: { title: 'Architettura (alto livello)', chain: { title: 'Vista di contesto', body: 'Web App ↔ Backend (REST per auth/ruoli, WebSocket/MQTT‑WS per stato). Backend ↔ Broker MQTT/TLS 8883. Dispositivo ESP32 ↔ Broker (QoS 1/2, LWT). Topic: <span class="kbd">devices/<id>/relays/<ch>/cmd|state</span>, <span class="kbd">devices/<id>/sys/lwt</span>, <span class="kbd">devices/<id>/cfg/*</span>.' } },
+      hw: { title: 'Hardware', items: { esp: { title: 'ESP32 DevKit V1', body: 'Dual‑core 240 MHz, Wi‑Fi/BLE, GPIO sufficienti per 4 relè + ingressi sensori. Watchdog e deep‑sleep.' }, relays: { title: 'Scheda relè 4 canali', body: 'Opto‑isolata, 5 V; contatti NO/NC; jumper JD‑VCC separato per isolamento.' }, sensors: { title: 'Sensori di stato (opz.)', body: 'Finecorsa/contatti magnetici per sapere se il cancello è aperto/chiuso; mappati su topic /inputs/*.' }, psu: { title: 'Alimentazione', body: 'Alimentatore 5 V stabile, protezioni e fusibili; cablaggio a norma.' } } },
+      sw: { title: 'Software', items: { fw: '<strong>Firmware (Arduino/ESP‑IDF)</strong>: PubSubClient TLS 8883, riconnessioni robuste, debouncing, comando Pulse (ms) e Latch, interlock a bordo.', backend: '<strong>Backend</strong>: API per auth/ruoli, bridge MQTT‑WS, audit e scene/timer.', web: '<strong>Web App</strong>: pannello CH0..CH3, editor scene, timer, log eventi e PWA.', ota: '<strong>OTA</strong>: update firmato, canary per pochi dispositivi prima del rollout.' } },
+      conn: { title: 'Connettività & topic', topics: { title: 'Schema MQTT', body: '<span class="kbd">devices/<id>/relays/<ch>/cmd</span> → <span class="mini">payload: {mode:"pulse|latch", value:0|1, ms:900}</span><br><span class="kbd">devices/<id>/relays/<ch>/state</span> (retained)<br><span class="kbd">devices/<id>/cfg/*</span> per parametri runtime.' }, sec: { title: 'Sicurezza', body: 'TLS con CA radice in flash, username/password dedicati, ACL per topic per‑device, LWT su <span class="kbd">/sys/lwt</span>, rate‑limit.' } },
+      logs: { title: 'Dati & Log', body: 'Eventi (user, canale, azione, ms, esito), stato aggregato per dashboard, esportazioni CSV/Parquet. Opzione cloud: Firebase/Firestore oppure SQLite su backend.' },
+      media: { title: 'Media', desc: 'Screenshot della Web App. Clicca per ingrandire.' },
+      footer: { tail: 'More about Gate Relay' }
+    },
+    en: {
+      nav: { back: 'Home' },
+      hero: { badge: 'IoT • MQTT • TLS • Web', title: 'Gate Relay — ESP32 + MQTT + Modular Web App (4 relays)', lead: 'Remote & local control of 4 independent relays (gate + auxiliary devices). Secure ESP32 firmware, MQTT/TLS 8883 broker (HiveMQ Cloud), Firebase‑based Web App (Auth/Firestore/Functions) with real‑time states, mono/bi‑stable modes, interlocks and cloud logging.', cta: { flows: 'See flows', arch: 'Architecture' } },
+      overview: {
+        title: 'Overview',
+        text: 'Goals: safe & reliable control of 4 outputs, phone‑first UX, modularity to scale to N channels, resilience to flaky networks and remote MQTT host reconfig + reboot. Key points: configurable interlocks, safety policies (fail‑safe), OTA, event logs and logic editable from the Web App via Firebase Functions.',
+        cards: {
+          channels: { subtitle: 'Channels', title: '4 independent relays', body: 'Mapped by topics: <span class="kbd">devices/<id>/relays/<ch>/cmd</span>. Mono‑stable (pulse, default 900 ms) or bi‑stable (latch) modes.' },
+          sec: { subtitle: 'Security', title: 'TLS 8883 & Fail‑safe', body: 'MQTT over TLS (HiveMQ Cloud, root CA in flash), Firebase Auth (JWT) for the Web App, watchdog and safe boot‑state. Interlocks & auto timeouts.' },
+          ui: { subtitle: 'UI', title: 'Real‑time dashboard', body: 'Channel states, scenes (macros), timers, recent logs. PWA for mobile use.' }
+        }
+      },
+      flows: {
+        title: 'User flows',
+        cards: {
+          pair: { title: 'Pairing & access', body: 'Associate device (QR/ID), set roles & permissions (e.g., guests only CH0). Renewable tokens.' },
+          panel: { title: 'Relay panel', body: 'Per‑channel toggle, Pulse button with duration, timers and scenes (e.g., “Arriving home”: driveway light + gate).' },
+          policy: { title: 'Policy & safety', body: 'Configure interlocks, boot behaviour (all OFF), timeouts and allowed time window.' },
+          ops: { title: 'Logs & maintenance', body: 'Cloud logs (who did what/when), uptime metrics and signed OTA updates.' }
+        }
+      },
+      arch: { title: 'Architecture (high level)', chain: { title: 'Context view', body: 'Web App (Firebase Auth/Firestore) ↔ Firebase Functions (logic: scenes/timers, ACL, config) ↔ (opt.) WebSocket/MQTT‑WS for state. Firebase Functions ↔ MQTT/TLS 8883 Broker (HiveMQ Cloud). ESP32 device ↔ Broker (QoS 1/2, LWT). Topics: <span class="kbd">devices/<id>/relays/<ch>/cmd|state</span>, <span class="kbd">devices/<id>/sys/lwt</span>, <span class="kbd">devices/<id>/cfg/*</span>.' } },
+      hw: { title: 'Hardware', items: { esp: { title: 'ESP32 DevKit V1', body: 'Dual‑core 240 MHz, Wi‑Fi/BLE, enough GPIO for 4 relays + sensors. Watchdog & deep‑sleep.' }, relays: { title: '4‑channel relay board', body: 'Opto‑isolated, 5 V; NO/NC contacts; separate JD‑VCC jumper for isolation.' }, sensors: { title: 'Status sensors (opt.)', body: 'Limit/magnetic switches to know gate open/closed; mapped to <span class="kbd">/inputs/*</span>.' }, psu: { title: 'Power supply', body: 'Stable 5 V PSU, protections/fuses; proper wiring.' } } },
+      sw: { title: 'Software', items: { fw: '<strong>Firmware (Arduino/ESP‑IDF)</strong>: PubSubClient TLS 8883, robust reconnects, debouncing, Pulse (ms) & Latch, on‑board interlocks.', backend: '<strong>Firebase Functions</strong>: roles/ACL via Firebase Auth, scene mapping, command orchestration, config updates (MQTT host) and audit hooks to Firestore.', web: '<strong>Web App</strong>: CH0..CH3 panel, scene editor, timers, event log and PWA.', ota: '<strong>OTA</strong>: signed update, canary to a few devices before rollout.' } },
+      conn: { title: 'Connectivity & topics', topics: { title: 'MQTT schema', body: '<span class="kbd">devices/<id>/relays/<ch>/cmd</span> → <span class="mini">payload: {mode:"pulse|latch", value:0|1, ms:900}</span><br><span class="kbd">devices/<id>/relays/<ch>/state</span> (retained)<br><span class="kbd">devices/<id>/cfg/*</span> for runtime params.' }, sec: { title: 'Security', body: 'TLS with root CA in flash, dedicated credentials, per‑device topic ACLs on HiveMQ Cloud, LWT on <span class="kbd">/sys/lwt</span>, rate‑limit. Dynamic endpoint rotation via <span class="kbd">/cfg/mqtt</span>.' } },
+      logs: { title: 'Data & Logs', body: 'Events (user, channel, action, ms, outcome), aggregated state for dashboard, CSV/Parquet export. Cloud option: Firebase/Firestore or SQLite on backend.' },
+      media: { title: 'Media', desc: 'Screenshots of the Web App. Click to enlarge.' },
+      footer: { tail: 'More about Gate Relay' }
+    }
+  };
+  // extend i18n with reconfig card
+  I18N.it.flows.cards.recfg = { title: 'Reconfig MQTT & riavvio', body: 'Da Web App aggiorni host/porta/credenziali (HiveMQ Cloud), pub su /cfg/mqtt (retained), funzione applica e invia /cmd/reboot.' };
+  I18N.en.flows.cards.recfg = { title: 'MQTT reconfig & reboot', body: 'From the Web App you update host/port/credentials (HiveMQ Cloud), publish to /cfg/mqtt (retained), a function applies it and sends /cmd/reboot.' };
+
+  // --- Media items (replace src with your files) ---
+  const MEDIA = [
+    { type: 'img', src: 'media/rele-homepage-device.png', w: 1600, h: 1200, i18n: { it: { cap: 'ESP32 + scheda relè 4ch' }, en: { cap: 'ESP32 + 4‑ch relay board' } } },
+    { type: 'img', src: 'media/rele-admin-view.png', w: 1600, h: 900, i18n: { it: { cap: 'Log eventi & audit' }, en: { cap: 'Event logs & audit' } } }
+    // Example video: { type: 'video', src: 'media/gaterelay-open.mp4', w:1920, h:1080, i18n:{it:{cap:'Scena: Apri cancello + accendi luce'}, en:{cap:'Scene: Open gate + turn on light'}} }
+  ];
+
+  function $all(sel, root=document){ return [...root.querySelectorAll(sel)]; }
+  function applyI18N(lang){
+    const dict = I18N[lang];
+    document.documentElement.setAttribute('lang', lang);
+    $all('[data-i18n]').forEach(el => {
+      const path = el.getAttribute('data-i18n').split('.');
+      let val = dict; for(const k of path){ val = val?.[k]; }
+      if(typeof val === 'string'){ el.innerHTML = val; }
+    });
+  }
+
+  function renderGallery(lang){
+    const g = document.getElementById('gallery');
+    g.innerHTML = '';
+    MEDIA.forEach((m, idx)=>{
+      const fig = document.createElement('figure');
+      fig.innerHTML = `
+        ${m.type==='img' ? `<img src="${m.src}" alt="${m.i18n[lang].cap}" loading="lazy" width="${m.w}" height="${m.h}">` : `<video src="${m.src}" muted playsinline preload="metadata"></video>`}
+        <figcaption>${m.i18n[lang].cap}</figcaption>`;
+      fig.addEventListener('click', ()=> openLightbox(idx, lang));
+      g.appendChild(fig);
+    });
+  }
+
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbVideo = document.getElementById('lb-video');
+  const lbCap = document.getElementById('lb-cap');
+  document.getElementById('lb-close').addEventListener('click', ()=> lb.close());
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lb.open) lb.close(); });
+
+  function openLightbox(index, lang){
+    const m = MEDIA[index];
+    lbImg.style.display = 'none';
+    lbVideo.style.display = 'none';
+    if(m.type==='img'){
+      lbImg.src = m.src; lbImg.alt = m.i18n[lang].cap; lbImg.style.display='block';
+    } else {
+      lbVideo.src = m.src; lbVideo.style.display='block'; lbVideo.play();
+    }
+    lbCap.textContent = m.i18n[lang].cap;
+    document.getElementById('lb-title').textContent = 'Gate Relay';
+    lb.showModal();
+  }
+
+  function setLang(lang){
+    localStorage.setItem('gaterelay_lang', lang);
+    document.getElementById('lang-it').setAttribute('aria-pressed', String(lang==='it'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang==='en'));
+    applyI18N(lang);
+    renderGallery(lang);
+  }
+  document.getElementById('lang-it').addEventListener('click', ()=> setLang('it'));
+  document.getElementById('lang-en').addEventListener('click', ()=> setLang('en'));
+
+  // Init
+  (function(){
+    document.getElementById('y').textContent = new Date().getFullYear();
+    const lang = localStorage.getItem('gaterelay_lang') || (localStorage.getItem('lang')||'it');
+    setLang(lang);
+  })();
+  </script>
+</body>
+</html>

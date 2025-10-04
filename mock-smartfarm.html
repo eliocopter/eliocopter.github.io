@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartFarm — More / Approfondimento</title>
+  <meta name="description" content="Interfaccia e scheda tecnica per SmartFarm: guida parallela RTK, Android app, MQTT, ESP32, Raspberry Pi bridge." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Page‑specific tweaks */
+    .hero.hero-slim{padding:48px 0 8px}
+    .grid.cols-3{grid-template-columns:repeat(12,1fr)}
+    .grid.cols-3>.card{grid-column:span 4}
+    @media (max-width:880px){.grid.cols-3>.card{grid-column:span 12}}
+    .mini{font-size:12px;color:var(--muted)}
+    .pill.kind{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.3)}
+    .pill.warn{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.3)}
+    .kbd.inline{padding:0 6px}
+    .toc a{display:inline-block;margin-right:14px;margin-bottom:8px}
+    .specs dt{font-weight:700}
+    .specs dd{margin:0 0 10px 0;color:var(--muted)}
+    .lang-switch{display:flex;gap:6px}
+
+    /* Media gallery */
+    .gallery{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .gallery figure{grid-column:span 6;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;margin:0}
+    .gallery figure img,.gallery figure video{display:block;width:auto;height:auto;margin: auto;}
+    .gallery figure figcaption{padding:10px 12px;color:var(--muted);font-size:13px}
+    @media (max-width:880px){.gallery figure{grid-column:span 12}}
+
+    /* Lightbox */
+    #lightbox{border:none;border-radius:18px;max-width:min(1100px,96%);width:auto;padding:0;background:var(--card);color:var(--text);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+    #lightbox::backdrop{background:rgba(0,0,0,.6)}
+    #lightbox .lb-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+    #lightbox .lb-body{padding:0}
+    #lightbox .lb-body img,#lightbox .lb-body video{display:block;width:auto;height:auto;margin: auto;}
+    #lightbox .lb-cap{padding:10px 14px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,.12)}
+    #lb-close{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px}
+  </style>
+</head>
+<body>
+  <header class="container header">
+    <div class="logo"><div class="mark"><span class="dot"></span></div><div>SmartFarm</div></div>
+    <nav class="topnav" aria-label="secondary">
+      <a href="index.html" data-i18n="nav.back">Home</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero hero-slim">
+      <div>
+        <span class="badge" data-i18n="hero.badge">IoT • RTK • Android • MQTT</span>
+        <h1 data-i18n="hero.title">SmartFarm — Guida parallela e telemetria di campo</h1>
+        <p class="lead" data-i18n="hero.lead">Sistema IoT per agricoltura di precisione: antenna GNSS RTK (precisione centimetrica), bridge Raspberry, indicatori ESP32 e App Android per guida AB/Corona, storage storico e assistente agronomico on‑device.</p>
+        <div class="cta">
+          <a class="btn" href="#flussi" data-i18n="hero.cta.flows">Vedi i flussi</a>
+          <a class="btn secondary" href="#architettura" data-i18n="hero.cta.arch">Architettura</a>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="overview" class="section">
+      <h2 data-i18n="overview.title">Overview</h2>
+      <p class="muted" data-i18n="overview.text">Obiettivi: Digital Twin del campo, guida con precisione centimetrica, decisioni data‑driven e architettura modulare per scalare a nuovi dispositivi. Punti chiave: facilità d’uso via App, feedback istantaneo, storage dei campi/valori e chatbot agronomico.</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.precision.subtitle">Precisione &amp; correzioni</div>
+            <div class="title" data-i18n="overview.cards.precision.title">RTK + NTRIP</div>
+            <p class="muted" data-i18n="overview.cards.precision.body">Fix centimetrico via correzioni RTCM, gestione duplex seriale e heading GNRMC per traiettorie AB/Corona.</p>
+            <span class="pill">RTK</span> <span class="pill">NTRIP</span> <span class="pill">NMEA</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.bridge.subtitle">Bridge</div>
+            <div class="title" data-i18n="overview.cards.bridge.title">Raspberry Pi 3B+</div>
+            <p class="muted" data-i18n="overview.cards.bridge.body">Acquisizione NMEA a 38 400 baud (UART 8N1), inoltro correzioni, smistamento messaggi e WebView di debug.</p>
+            <span class="pill">UART 8N1</span> <span class="pill">38 400 baud</span>
+          </div>
+        </article>
+        <article class="card">
+          <div class="pad">
+            <div class="subtitle" data-i18n="overview.cards.hmi.subtitle">HMI</div>
+            <div class="title" data-i18n="overview.cards.hmi.title">ESP32 + LCD/LED</div>
+            <p class="muted" data-i18n="overview.cards.hmi.body">Feedback visivo in cabina: qualità segnale GNSS, freccia direzionale &amp; notifiche. T<sub>LED</sub> medio &lt; 50 ms.</p>
+            <span class="pill">ESP32</span> <span class="pill">LCD 16×2</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="flussi" class="section">
+      <h2 data-i18n="flows.title">Flussi utente </h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="mock"> 
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Login & dispositivi">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#3b82f6"/>
+              <rect x="56" y="60" width="240" height="40" rx="8" fill="#141a2a"/>
+              <rect x="56" y="116" width="240" height="40" rx="8" fill="#141a2a"/>
+              <rect x="320" y="60" width="264" height="96" rx="10" fill="#141a2a"/>
+              <text x="62" y="86" font-family="Inter" font-size="16" fill="#8b93a7">Email / Registrazione</text>
+              <text x="62" y="142" font-family="Inter" font-size="16" fill="#8b93a7">Password / Login</text>
+              <text x="330" y="90" font-family="Inter" font-size="16" fill="#8b93a7">Dispositivi disponibili</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.login.title">Login → Seleziona dispositivo</div>
+            <p class="muted" data-i18n="flows.cards.login.body">Registrazione/login, discovery dei nodi disponibili e pairing rapido. Refresh dispositivi in un tap.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Modalità Corona/AB">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#22d3ee"/>
+              <rect x="56" y="60" width="528" height="72" rx="10" fill="#141a2a"/>
+              <rect x="56" y="148" width="250" height="150" rx="10" fill="#141a2a"/>
+              <rect x="334" y="148" width="250" height="150" rx="10" fill="#141a2a"/>
+              <text x="66" y="104" font-family="Inter" font-size="16" fill="#8b93a7">Selettore modalità &amp; larghezza</text>
+              <text x="66" y="180" font-family="Inter" font-size="16" fill="#8b93a7">Corona: Inizia/Ferma/Salva</text>
+              <text x="344" y="180" font-family="Inter" font-size="16" fill="#8b93a7">AB: Salva A/B, Larghezza</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.modes.title">Modalità Corona &amp; AB</div>
+            <p class="muted" data-i18n="flows.cards.modes.body">Pulsanti dedicati per start/stop, set larghezza attrezzo e salvataggio del campo. Genera/pulisci linee.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="WebView realtime">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#a78bfa"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Map &amp; telemetria in tempo reale</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.webview.title">WebView &amp; Telemetria</div>
+            <p class="muted" data-i18n="flows.cards.webview.body">Mappa OSM, traiettorie generate, marker veicolo, indicatori fix (DGPS/RTK) e notifiche in tempo reale.</p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="mock">
+            <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chat agronomica">
+              <rect x="24" y="24" width="592" height="312" rx="18" fill="#0f1422" stroke="#34d399"/>
+              <rect x="56" y="60" width="528" height="220" rx="10" fill="#141a2a"/>
+              <text x="66" y="96" font-family="Inter" font-size="16" fill="#8b93a7">Chat agronomica on‑device (Gemma/TF‑Lite)</text>
+            </svg>
+          </div>
+          <div class="pad">
+            <div class="title" data-i18n="flows.cards.chat.title">ChatBot agronomico</div>
+            <p class="muted" data-i18n="flows.cards.chat.body">Inference on‑device con fallback cloud. <span class="mini">Log dei soli messaggi agricoli (es: “semina”, “concime”)</span>.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+<section id="media" class="section">
+      <h2 data-i18n="media.title">Media</h2>
+      <p class="muted" data-i18n="media.desc">GIF e immagini reali dall'app Android. Clicca per ingrandire.</p>
+      <div class="gallery" id="gallery"></div>
+    </section>
+    <section id="architettura" class="section">
+      <h2 data-i18n="arch.title">Architettura (alto livello)</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 12">
+          <div class="pad">
+            <div class="title" data-i18n="arch.chain.title">Catena dati</div>
+            <p class="muted" data-i18n="arch.chain.body">Antenna GNSS → Bridge Raspberry (seriale) → Broker MQTT/TLS → App Android &amp; ESP32. Il Bridge smista messaggi, accoda e rilascia correzioni RTCM (1 Hz) e fornisce WebView di debug.</p>
+            <div class="tags"><span class="tag">QoS 2</span> <span class="tag">Pub/Sub</span> <span class="tag">Topic gerarchici</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="hardware" class="section">
+      <h2 data-i18n="hw.title">Hardware</h2>
+      <dl class="specs">
+        <dt data-i18n="hw.items.antenna.title">Antenna GNSS multibanda</dt>
+        <dd data-i18n="hw.items.antenna.body">Supporto GPS/Galileo/GLONASS/BeiDou; consumo ≈ 15 mA; alimentazione 3.3–5 V; impermeabilità IP67.</dd>
+        <dt data-i18n="hw.items.pi.title">Raspberry Pi 3B+</dt>
+        <dd data-i18n="hw.items.pi.body">Quad‑core A53 1.4 GHz, Wi‑Fi dual‑band, BT 4.2, Ethernet, 4×USB, GPIO 40p; acquisizione seriale via USB‑UART.</dd>
+        <dt data-i18n="hw.items.esp.title">ESP32 DevKit V1 – DOIT</dt>
+        <dd data-i18n="hw.items.esp.body">Dual‑core 240 MHz, Wi‑Fi 802.11 b/g/n + BLE, 34 GPIO, DAC/ADC, deep‑sleep &lt; 10 µA.</dd>
+        <dt data-i18n="hw.items.hmi.title">Attuatori e HMI</dt>
+        <dd data-i18n="hw.items.hmi.body">LED RGB qualità fix; LCD 16×2 con freccia direzionale e messaggi di stato.</dd>
+      </dl>
+    </section>
+
+    <section id="software" class="section">
+      <h2 data-i18n="sw.title">Software</h2>
+      <ul class="muted">
+        <li data-i18n="sw.items.android"><strong>Android (Kotlin)</strong>: login Firebase, mappa Osmdroid, gestione campi/salvataggi, selezione modalità.</li>
+        <li data-i18n="sw.items.bridge"><strong>Bridge Python</strong>: lettura NMEA, NTRIP client, Socket.IO/WebView, inoltro eventi verso MQTT.</li>
+        <li data-i18n="sw.items.esp"><strong>ESP32 (Arduino)</strong>: ricezione comandi, indicatori LED/LCD, watchdog e riconnessioni TLS 8883.</li>
+        <li data-i18n="sw.items.chat"><strong>Chat on‑device</strong>: TFLite + MediaPipe Tasks con fallback cloud; <em>ChatLogger</em> filtra messaggi agricoli rilevanti.</li>
+        <li data-i18n="sw.items.storage"><strong>Storage</strong>: Firestore per campi e log selettivi della chat.</li>
+      </ul>
+    </section>
+
+    <section id="connettivita" class="section">
+      <h2 data-i18n="conn.title">Connettività</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title" data-i18n="conn.serial.title">Seriale</div>
+            <p class="muted" data-i18n="conn.serial.body">UART asincrona 8‑N‑1 @ 38 400 baud tra antenna e Bridge per NMEA e correzioni in duplex.</p>
+            <div class="tags"><span class="tag">UART 8N1</span> <span class="tag">38 400 baud</span></div>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title" data-i18n="conn.mqtt.title">MQTT</div>
+            <p class="muted" data-i18n="conn.mqtt.body">Schema topic gerarchico, QoS 2 per consegna garantita, TLS 8883 su broker cloud.</p>
+            <div class="tags"><span class="tag">TLS 8883</span> <span class="tag">QoS 2</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="dati" class="section">
+      <h2 data-i18n="data.title">Dati &amp; Storage</h2>
+      <p class="muted" data-i18n="data.body">Storico dei campi, rigenerazione delle linee a larghezze differenti, log messaggi “agricoli” dalla chat per creare dataset reali verso un futuro agente agronomico fine‑tuned.</p>
+    </section>
+
+    <!-- MEDIA replaces former Roadmap -->
+    
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <dialog id="lightbox">
+    <div class="lb-head">
+      <strong id="lb-title">SmartFarm</strong>
+      <button id="lb-close">Close</button>
+    </div>
+    <div class="lb-body">
+      <img id="lb-img" alt="" style="display:none"/>
+      <video id="lb-video" autoplay muted loop playsinline controls style="display:none"></video>
+    </div>
+    <div class="lb-cap" id="lb-cap"></div>
+  </dialog>
+
+  <script>
+  // --- Minimal i18n + gallery for this page ---
+  const I18N = {
+    it: {
+      nav: { back: 'Home' },
+      hero: { badge: 'IoT • RTK • Android • MQTT', title: 'SmartFarm — Guida parallela e telemetria di campo', lead: 'Sistema IoT per agricoltura di precisione: antenna GNSS RTK (precisione centimetrica), bridge Raspberry, indicatori ESP32 e App Android per guida AB/Corona, storage storico e assistente agronomico on‑device.', cta: { flows: 'Vedi i flussi', arch: 'Architettura' } },
+      overview: {
+        title: 'Overview',
+        text: 'Obiettivi: Digital Twin del campo, guida con precisione centimetrica, decisioni data‑driven e architettura modulare per scalare a nuovi dispositivi. Punti chiave: facilità d’uso via App, feedback istantaneo, storage dei campi/valori e chatbot agronomico.',
+        cards: {
+          precision: { subtitle: 'Precisione & correzioni', title: 'RTK + NTRIP', body: 'Fix centimetrico via correzioni RTCM, gestione duplex seriale e heading GNRMC per traiettorie AB/Corona.' },
+          bridge: { subtitle: 'Bridge', title: 'Raspberry Pi 3B+', body: 'Acquisizione NMEA a 38 400 baud (UART 8N1), inoltro correzioni, smistamento messaggi e WebView di debug.' },
+          hmi: { subtitle: 'HMI', title: 'ESP32 + LCD/LED', body: 'Feedback visivo in cabina: qualità segnale GNSS, freccia direzionale & notifiche. TLED medio < 50 ms.' }
+        }
+      },
+      flows: {
+        title: 'Flussi utente ',
+        cards: {
+          login: { title: 'Login → Seleziona dispositivo', body: 'Registrazione/login, discovery dei nodi disponibili e pairing rapido. Refresh dispositivi in un tap.' },
+          modes: { title: 'Modalità Corona & AB', body: 'Pulsanti dedicati per start/stop, set larghezza attrezzo e salvataggio del campo. Genera/pulisci linee.' },
+          webview: { title: 'WebView & Telemetria', body: 'Mappa OSM, traiettorie generate, marker veicolo, indicatori fix (DGPS/RTK) e notifiche in tempo reale.' },
+          chat: { title: 'ChatBot agronomico', body: 'Inference on‑device con fallback cloud. <span class="mini">Log dei soli messaggi agricoli (es: “semina”, “concime”)</span>.' }
+        }
+      },
+      arch: { title: 'Architettura (alto livello)', chain: { title: 'Catena dati', body: 'Antenna GNSS → Bridge Raspberry (seriale) → Broker MQTT/TLS → App Android & ESP32. Il Bridge smista messaggi, accoda e rilascia correzioni RTCM (1 Hz) e fornisce WebView di debug.' } },
+      hw: { title: 'Hardware', items: { antenna: { title: 'Antenna GNSS multibanda', body: 'Supporto GPS/Galileo/GLONASS/BeiDou; consumo ≈ 15 mA; alimentazione 3.3–5 V; impermeabilità IP67.' }, pi: { title: 'Raspberry Pi 3B+', body: 'Quad‑core A53 1.4 GHz, Wi‑Fi dual‑band, BT 4.2, Ethernet, 4×USB, GPIO 40p; acquisizione seriale via USB‑UART.' }, esp: { title: 'ESP32 DevKit V1 – DOIT', body: 'Dual‑core 240 MHz, Wi‑Fi 802.11 b/g/n + BLE, 34 GPIO, DAC/ADC, deep‑sleep < 10 µA.' }, hmi: { title: 'Attuatori e HMI', body: 'LED RGB qualità fix; LCD 16×2 con freccia direzionale e messaggi di stato.' } } },
+      sw: { title: 'Software', items: { android: '<strong>Android (Kotlin)</strong>: login Firebase, mappa Osmdroid, gestione campi/salvataggi, selezione modalità.', bridge: '<strong>Bridge Python</strong>: lettura NMEA, NTRIP client, Socket.IO/WebView, inoltro eventi verso MQTT.', esp: '<strong>ESP32 (Arduino)</strong>: ricezione comandi, indicatori LED/LCD, watchdog e riconnessioni TLS 8883.', chat: '<strong>Chat on‑device</strong>: TFLite + MediaPipe Tasks con fallback cloud; <em>ChatLogger</em> filtra messaggi agricoli rilevanti.', storage: '<strong>Storage</strong>: Firestore per campi e log selettivi della chat.' } },
+      conn: { title: 'Connettività', serial: { title: 'Seriale', body: 'UART asincrona 8‑N‑1 @ 38 400 baud tra antenna e Bridge per NMEA e correzioni in duplex.' }, mqtt: { title: 'MQTT', body: 'Schema topic gerarchico, QoS 2 per consegna garantita, TLS 8883 su broker cloud.' } },
+      data: { title: 'Dati & Storage', body: 'Storico dei campi, rigenerazione delle linee a larghezze differenti, log messaggi “agricoli” dalla chat per creare dataset reali verso un futuro agente agronomico fine‑tuned.' },
+      media: { title: 'Media', desc: 'GIF e immagini reali dall\'app Android, dalla WebView e dall\'HMI ESP32. Clicca per ingrandire.' },
+      footer: { tail: 'More about SmartFarm' }
+    },
+    en: {
+      nav: { back: 'Home' },
+      hero: { badge: 'IoT • RTK • Android • MQTT', title: 'SmartFarm — Parallel guidance & field telemetry', lead: 'Precision agriculture IoT: GNSS RTK antenna (centimetric), Raspberry bridge, ESP32 indicators and Android App for AB/Circle guidance, historical storage and on‑device agronomy assistant.', cta: { flows: 'See flows', arch: 'Architecture' } },
+      overview: {
+        title: 'Overview',
+        text: 'Goals: field Digital Twin, centimetric guidance, data‑driven decisions and a modular architecture to scale to new devices. Key points: app‑first usability, instant feedback, field/value storage and an agronomy chatbot.',
+        cards: {
+          precision: { subtitle: 'Precision & corrections', title: 'RTK + NTRIP', body: 'Centimetric fix via RTCM corrections, serial duplex handling and GNRMC heading for AB/Circle paths.' },
+          bridge: { subtitle: 'Bridge', title: 'Raspberry Pi 3B+', body: 'NMEA acquisition at 38,400 baud (UART 8N1), corrections forwarding, message routing and a debug WebView.' },
+          hmi: { subtitle: 'HMI', title: 'ESP32 + LCD/LED', body: 'In‑cab visual feedback: GNSS quality, steering arrow & notifications. Average T<sub>LED</sub> < 50 ms.' }
+        }
+      },
+      flows: {
+        title: 'User flows',
+        cards: {
+          login: { title: 'Login → Select device', body: 'Sign‑up/login, discovery of available nodes and quick pairing. One‑tap refresh.' },
+          modes: { title: 'Circle & AB modes', body: 'Dedicated controls for start/stop, implement width and field saving. Generate/clear lines.' },
+          webview: { title: 'WebView & Telemetry', body: 'OSM map, generated paths, vehicle marker, fix indicators (DGPS/RTK) and real‑time notifications.' },
+          chat: { title: 'Agronomy chatbot', body: 'On‑device inference with cloud fallback. <span class="mini">Logs only agriculture‑related messages (e.g., “sowing”, “fertilizer”).</span>' }
+        }
+      },
+      arch: { title: 'Architecture (high level)', chain: { title: 'Data chain', body: 'GNSS antenna → Raspberry bridge (serial) → MQTT/TLS broker → Android App & ESP32. The Bridge routes messages, buffers and releases RTCM corrections (1 Hz) and provides a debug WebView.' } },
+      hw: { title: 'Hardware', items: { antenna: { title: 'Multiband GNSS antenna', body: 'Supports GPS/Galileo/GLONASS/BeiDou; ≈ 15 mA; 3.3–5 V; IP67.' }, pi: { title: 'Raspberry Pi 3B+', body: 'Quad‑core A53 1.4 GHz, dual‑band Wi‑Fi, BT 4.2, Ethernet, 4×USB, 40‑pin GPIO; serial via USB‑UART.' }, esp: { title: 'ESP32 DevKit V1 – DOIT', body: 'Dual‑core 240 MHz, Wi‑Fi 802.11 b/g/n + BLE, 34 GPIO, DAC/ADC, deep‑sleep < 10 µA.' }, hmi: { title: 'Actuators & HMI', body: 'RGB LEDs for fix quality; 16×2 LCD with steering arrow and status messages.' } } },
+      sw: { title: 'Software', items: { android: '<strong>Android (Kotlin)</strong>: Firebase login, Osmdroid map, field management/saving, mode selection.', bridge: '<strong>Python Bridge</strong>: NMEA reading, NTRIP client, Socket.IO/WebView, event forwarding to MQTT.', esp: '<strong>ESP32 (Arduino)</strong>: command handling, LED/LCD indicators, watchdog and TLS 8883 reconnects.', chat: '<strong>On‑device chat</strong>: TFLite + MediaPipe Tasks with cloud fallback; <em>ChatLogger</em> filters agriculture‑related messages.', storage: '<strong>Storage</strong>: Firestore for fields and selective chat logs.' } },
+      conn: { title: 'Connectivity', serial: { title: 'Serial', body: 'Asynchronous UART 8‑N‑1 @ 38,400 baud between antenna and Bridge for duplex NMEA and corrections.' }, mqtt: { title: 'MQTT', body: 'Hierarchical topic schema, QoS 2 for guaranteed delivery, TLS 8883 on cloud broker.' } },
+      data: { title: 'Data & Storage', body: 'Field history, line regeneration at different widths, chat‑captured “agriculture” messages to build real datasets toward a fine‑tuned agronomy agent.' },
+      media: { title: 'Media', desc: 'Real GIFs and images from the Android app. Click to enlarge.' },
+      footer: { tail: 'More about SmartFarm' }
+    }
+  };
+
+ 
+  const MEDIA = [
+    { type: 'img', src: 'media/smartfarm-modes.png', i18n: { it: { cap: 'Menu Principale' }, en: { cap: 'Main Menu' } } },
+    { type: 'img', src: 'media/Corona.gif',  i18n: { it: { cap: 'Esempio modalità di lavoro Corona' }, en: { cap: 'Corona example' } } },
+    { type: 'img', src: 'media/AI.gif', i18n: { it: { cap: 'LLM ChatBot' }, en: { cap: 'LLM ChatBot on device' } } },
+    { type: 'img', src: 'media/fields.gif',  i18n: { it: { cap: 'Carica campi' }, en: { cap: 'Fields loader' } } }
+    // Puoi aggiungere altri elementi: { type: 'video', src: 'media/demo.mp4', w:1920, h:1080, i18n:{it:{cap:'Demo breve'}, en:{cap:'Short demo'}} }
+  ];
+
+  function $all(sel, root=document){ return [...root.querySelectorAll(sel)]; }
+  function applyI18N(lang){
+    const dict = I18N[lang];
+    document.documentElement.setAttribute('lang', lang);
+    $all('[data-i18n]').forEach(el => {
+      const path = el.getAttribute('data-i18n').split('.');
+      let val = dict; for(const k of path){ val = val?.[k]; }
+      if(typeof val === 'string'){ el.innerHTML = val; }
+    });
+  }
+
+  function renderGallery(lang){
+    const g = document.getElementById('gallery');
+    g.innerHTML = '';
+    MEDIA.forEach((m, idx)=>{
+      const fig = document.createElement('figure');
+      fig.innerHTML = `
+        ${m.type==='img' ? `<img src="${m.src}" alt="${m.i18n[lang].cap}" loading="lazy" width="${m.w}" height="${m.h}">` : `<video src="${m.src}" muted playsinline preload="metadata"></video>`}
+        <figcaption>${m.i18n[lang].cap}</figcaption>`;
+      fig.addEventListener('click', ()=> openLightbox(idx, lang));
+      g.appendChild(fig);
+    });
+  }
+
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbVideo = document.getElementById('lb-video');
+  const lbCap = document.getElementById('lb-cap');
+  document.getElementById('lb-close').addEventListener('click', ()=> lb.close());
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lb.open) lb.close(); });
+
+  function openLightbox(index, lang){
+    const m = MEDIA[index];
+    lbImg.style.display = 'none';
+    lbVideo.style.display = 'none';
+    if(m.type==='img'){
+      lbImg.src = m.src; lbImg.alt = m.i18n[lang].cap; lbImg.style.display='block';
+    } else {
+      lbVideo.src = m.src; lbVideo.style.display='block'; lbVideo.play();
+    }
+    lbCap.textContent = m.i18n[lang].cap;
+    document.getElementById('lb-title').textContent = 'SmartFarm';
+    lb.showModal();
+  }
+
+  function setLang(lang){
+    localStorage.setItem('smartfarm_lang', lang);
+    document.getElementById('lang-it').setAttribute('aria-pressed', String(lang==='it'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang==='en'));
+    applyI18N(lang);
+    renderGallery(lang);
+  }
+  document.getElementById('lang-it').addEventListener('click', ()=> setLang('it'));
+  document.getElementById('lang-en').addEventListener('click', ()=> setLang('en'));
+
+  // Init
+  (function(){
+    document.getElementById('y').textContent = new Date().getFullYear();
+    const lang = localStorage.getItem('smartfarm_lang') || (localStorage.getItem('lang')||'it');
+    setLang(lang);
+  })();
+  </script>
+</body>
+</html>

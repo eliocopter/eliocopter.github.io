@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Web3 • More / Approfondimento</title>
+  <meta name="description" content="Mock interattivo e curato per NFE: overview, link verificabili (OpenSea/Polygonscan), widget di mint in sola lettura con progress bar, code‑explorer e media (incluso TrumpXBiden)." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* === Page‑specific UI === */
+    .hero.hero-slim{padding:48px 0 8px}
+    .lang-switch{display:flex;gap:6px}
+
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:14px}
+    .stat{grid-column:span 3;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px}
+    .stat .k{font-size:12px;color:var(--muted)}
+    .stat .v{font-weight:800;font-size:18px;margin-top:4px;display:flex;gap:8px;align-items:center;word-break:break-all}
+    @media (max-width:880px){.stat{grid-column:span 12}}
+
+    /* Progress */
+    .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+    .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+
+    /* Mint widget */
+    .mint{display:grid;grid-template-columns:7fr 5fr;gap:16px}
+    .poster{position:relative;min-height:320px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:radial-gradient(120% 140% at -10% -10%,rgba(124,92,255,.24),transparent),radial-gradient(120% 140% at 110% 10%,rgba(110,231,255,.22),transparent),#0e1220}
+    .poster .inner{position:absolute;inset:0;display:grid;place-items:center}
+    .poster h3{margin:0;font-size:42px;letter-spacing:.4px}
+    .poster .note{position:absolute;bottom:12px;left:12px;color:var(--muted);font-size:12px}
+    .panel{border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .copy{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.16)}
+
+    /* Code explorer (tabs) */
+    .tabs{display:flex;gap:8px;margin-bottom:8px}
+    .tab{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px;cursor:pointer}
+    .tab[aria-selected="true"]{background:linear-gradient(90deg,rgba(124,92,255,.18),rgba(110,231,255,.18));border-color:transparent}
+    .code{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;overflow:auto;max-height:380px}
+
+    /* Gallery */
+    .gallery{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .gallery figure{grid-column:span 6;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;margin:0}
+    .gallery figure img,.gallery figure video{display:block;width:100%;height:auto}
+    .gallery figure figcaption{padding:10px 12px;color:var(--muted);font-size:13px}
+    @media (max-width:880px){.gallery figure{grid-column:span 12}}
+
+    /* Lightbox */
+    #lightbox{border:none;border-radius:18px;max-width:min(1100px,96%);width:auto;padding:0;background:var(--card);color:var(--text);box-shadow:0 30px 60px rgba(0,0,0,.5)}
+    #lightbox::backdrop{background:rgba(0,0,0,.6)}
+    #lightbox .lb-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+    #lightbox .lb-body{padding:0}
+    #lightbox .lb-body img,#lightbox .lb-body video{display:block;width:100%;height:auto}
+    #lightbox .lb-cap{padding:10px 14px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,.12)}
+    #lb-close{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--text);border-radius:10px;padding:6px 10px}
+  </style>
+</head>
+<body>
+  <header class="container header">
+    <div class="logo"><div class="mark"><span class="dot"></span></div><div>Web3</div></div>
+    <nav class="topnav" aria-label="secondary">
+      <a href="index.html" data-i18n="nav.back">Home</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="chip" id="lang-it" aria-pressed="true">IT</button>
+      <button class="chip" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="hero hero-slim">
+      <div>
+        <span class="badge" data-i18n="hero.badge">Web3 • NFT • Polygon</span>
+        <h1 data-i18n="hero.title">NonFungibleEarth — Portfolio</h1>
+        <p class="lead" data-i18n="hero.lead">Esempio reale di dApp NFT su Polygon: contract, landing e mint UI. Qui lo mostro come mock interattivo e curato (safe): progress supply on‑chain (read‑only), snippet di codice e media storici.</p>
+        <div class="cta">
+          <a class="btn" href="#mint" data-i18n="hero.cta.demo">Widget Demo</a>
+          <a class="btn ghost" href="#artifacts" data-i18n="hero.cta.artifacts">Artifact</a>
+        </div>
+
+        
+      </div>
+    </section>
+
+    <section id="overview" class="section">
+      <h2 data-i18n="overview.title">Overview</h2>
+      <p class="muted" data-i18n="overview.text">NFE è una collezione NFT su Polygon. Molti progetti Web3 oggi sono offline: qui documento il lavoro svolto (codice e contract) e lo presento in modo chiaro e verificabile, senza promesse finanziarie né mint reali.</p>
+    </section>
+
+    <section id="artifacts" class="section">
+      <h2 data-i18n="artifacts.title">Artifact esterni</h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title">OpenSea</div>
+            <p class="muted"><a class="kbd" href="https://opensea.io/collection/non-fungibleearth" target="_blank" rel="noopener">/collection/non-fungibleearth</a><br><span class="mini" data-i18n="artifacts.opensea.note">Scheda collezione (storico, items, holders).</span></p>
+          </div>
+        </article>
+        <article class="card" style="grid-column:span 6">
+          <div class="pad">
+            <div class="title">Polygonscan</div>
+            <p class="muted"><a class="kbd" href="https://polygonscan.com/address/0xdA6e91f3E4BD3773f610a24B1F340B1068C60055" target="_blank" rel="noopener">0xdA6e...0055</a><br><span class="mini" data-i18n="artifacts.scan.note">Dettagli del contratto e transazioni.</span></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="mint" class="section">
+      <h2 data-i18n="mint.title">Widget di mint (demo)</h2>
+      <div class="mint">
+        <div class="poster">
+          <div class="inner">
+            <div style="text-align:center">
+              <h3>NFE</h3>
+              <div class="mono" style="opacity:.8;margin-top:6px">ERC‑721 • Polygon</div>
+            </div>
+          </div>
+          <div class="note">UI dimostrativa • nessuna transazione</div>
+        </div>
+        <div class="panel">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="subtitle">Parametri</div>
+              <div class="mini">Read‑only da config.json</div>
+            </div>
+            <button class="chip" id="fetch-supply">Fetch supply</button>
+          </div>
+          <div class="row" style="margin-top:10px"><label class="muted" style="min-width:100px">Nome</label><div class="mono" id="name">—</div></div>
+          <div class="row"><label class="muted" style="min-width:100px">Symbol</label><div class="mono" id="symbol">—</div></div>
+          <div class="row"><label class="muted" style="min-width:100px">OpenSea</label><a id="opensea" class="kbd" target="_blank" rel="noopener">—</a></div>
+          <div class="row" style="margin-top:12px"><input id="rpc" class="mono" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--text)" placeholder="https://polygon-rpc.com"/></div>
+                      <br>  
+                      <div class="mini">Clicca su "Fetch Supply" per vedere la quantità mintata</div>
+
+        </div>
+      </div>
+    </section>
+<div class="stats">
+          <div class="stat">
+            <div class="k">Contract</div>
+            <div class="v mono"><span id="addr">0x…</span><button class="copy" id="copy-addr">Copy</button></div>
+          </div>
+          <div class="stat">
+            <div class="k">Network</div>
+            <div class="v"><span id="net">Polygon • MATIC</span></div>
+          </div>
+          <div class="stat">
+            <div class="k">Price</div>
+            <div class="v mono" id="cost">—</div>
+          </div>
+          <div class="stat">
+            <div class="k">Minted</div>
+            <div class="v mono"><span id="minted">n/d</span> / <span id="max">—</span></div>
+            <div class="progress" style="margin-top:8px"><i id="prog"></i></div>
+          </div>
+        </div>
+    <section id="code" class="section">
+      <h2 data-i18n="code.title">Code explorer </h2>
+      <div class="grid">
+        <article class="card" style="grid-column:span 12">
+          <div class="pad">
+            <div class="tabs" role="tablist">
+              <button class="tab" id="t-cfg" aria-selected="true">config/config.json</button>
+              <button class="tab" id="t-abi" aria-selected="false">config/abi.json (estratto)</button>
+            </div>
+            <pre class="code mono" id="codebox"></pre>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="media" class="section">
+      <h2 data-i18n="media.title">Media</h2>
+      <p class="muted" data-i18n="media.desc">Video e screenshot storici (NFE, TrumpXBiden). Clicca per ingrandire.</p>
+      <div class="gallery" id="gallery"></div>
+      <div class="card" style="grid-column:span 12;margin-top:16px">
+        <div class="pad">
+          <div class="title">TrumpXBiden</div>
+          <p class="muted" data-i18n="trumpxbiden.desc">Gioco sperimentale, oggi offline: obiettivo accumulare crypto tramite azioni/combo in‑game e timer. Nel video: panoramica UI, loop di punti → token, leaderboard e gating anti‑spam.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      © <span id="y"></span> • <span data-i18n="footer.tail">Euplio Lisi Portfolio</span>
+    </footer>
+  </main>
+
+  <dialog id="lightbox">
+    <div class="lb-head">
+      <strong id="lb-title">Media</strong>
+      <button id="lb-close">Close</button>
+    </div>
+    <div class="lb-body">
+      <img id="lb-img" alt="" style="display:none"/>
+      <video id="lb-video" autoplay muted loop playsinline controls style="display:none"></video>
+    </div>
+    <div class="lb-cap" id="lb-cap"></div>
+  </dialog>
+
+  <!-- ethers for optional read-only call -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script>
+  // --- Real config pulled from your NFE package ---
+  const NFE_CONFIG = {
+    CONTRACT_ADDRESS: '0xdA6e91f3E4BD3773f610a24B1F340B1068C60055',
+    SCAN_LINK: 'https://polygonscan.com/token/0xdA6e91f3E4BD3773f610a24B1F340B1068C60055',
+    NETWORK: { NAME: 'Polygon', SYMBOL: 'MATIC', ID: 137 },
+    NFT_NAME: 'NON FUNGIBLE EARTH',
+    SYMBOL: 'NFE',
+    MAX_SUPPLY: 16666,
+    WEI_COST: '35000000000000000000', // 35 in DISPLAY_COST
+    DISPLAY_COST: 35,
+    GAS_LIMIT: 285000,
+    MARKETPLACE: 'OpenSea',
+    MARKETPLACE_LINK: 'https://opensea.io/collection/non-fungibleearth',
+    SHOW_BACKGROUND: false
+  };
+
+  // Short ABI excerpt (trimmed for display)
+  const ABI_EXCERPT = `[
+    {"inputs": [], "stateMutability": "nonpayable", "type": "constructor"},
+    {"anonymous": false, "inputs": [
+      {"indexed": true, "internalType": "address", "name": "owner", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "approved", "type": "address"},
+      {"indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256"}
+    ], "name": "Approval", "type": "event"},
+    {"anonymous": false, "inputs": [
+      {"indexed": true, "internalType": "address", "name": "owner", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "operator", "type": "address"},
+      {"indexed": false, "internalType": "bool", "name": "approved", "type": "bool"}
+    ], "name": "ApprovalForAll", "type": "event"}
+    // …
+  ]`;
+
+
+  // Media — sostituisci src con i tuoi file reali
+  const MEDIA = [
+    { type: 'img', src: 'media/nfe.gif', w: 1600, h: 900, i18n: { it: { cap: 'Website' }, en: { cap: 'Website' } } },
+    { type: 'img', src: 'media/minting-nfe.gif', w: 1600, h: 900, i18n: { it: { cap: 'Minting dApp' }, en: { cap: 'Minting dApp' } } },
+    { type: 'img', src: 'media/trumpxbiden.gif', w: 1920, h: 1080, i18n: { it: { cap: 'Gioco TrumpXBiden: meccanica di accumulo crypto (demo)' }, en: { cap: 'TrumpXBiden game: crypto accumulation mechanic (demo)' } } }
+  ];
+
+  // Minimal i18n
+  const I18N = {
+    it: {
+      nav: { back: 'Home' },
+      hero: { badge: 'Web3 • NFT • Polygon', title: 'NonFungibleEarth — Portfolio Mock', lead: 'Esempio reale di dApp NFT su Polygon: contract, landing e mint UI. Qui lo mostro come mock interattivo e curato (safe): progress supply on‑chain (read‑only), snippet di codice e media storici.', cta: { artifacts: 'Artifact', demo: 'Widget Demo' } },
+      overview: { title: 'Overview', text: 'NFE è una collezione NFT su Polygon. Molti progetti Web3 oggi sono offline: qui documento il lavoro svolto (codice e contract) e lo presento in modo chiaro e verificabile, senza promesse finanziarie né mint reali.' },
+      artifacts: { title: 'Artifact esterni', opensea: { note: 'Scheda collezione (storico, items, holders).' }, scan: { note: 'Dettagli del contratto e transazioni.' }, site: { note: 'Sito collegato al progetto.' } },
+      mint: { title: 'Widget di mint (demo)' },
+      code: { title: 'Code explorer (snippet reali)' },
+      media: { title: 'Media', desc: 'Video e screenshot storici (NFE, TrumpXBiden). Clicca per ingrandire.' },
+      trumpxbiden :{title:'trumpxbiden', desc: 'Gioco sperimentale, oggi offline: obiettivo accumulare crypto tramite azioni/combo in‑game e timer. Nel video: panoramica UI, loop di punti → token, leaderboard e gating anti‑spam.'},
+      footer: { tail: 'More about Web3 ' }
+    },
+    en: {
+      nav: { back: 'Home' },
+      hero: { badge: 'Web3 • NFT • Polygon', title: 'NonFungibleEarth — Portfolio Mock', lead: 'Real example of an NFT dApp on Polygon: contract, landing and mint UI. Shown as a polished, safe mock: on‑chain supply progress (read‑only), code snippets and historical media.', cta: { artifacts: 'Artifacts', demo: 'Widget Demo' } },
+      overview: { title: 'Overview', text: 'NFE is an NFT collection on Polygon. Many Web3 projects are now offline: this page documents what was built (code & contract) and presents it clearly and verifiably, with no financial promises and no live mint.' },
+      artifacts: { title: 'External artifacts', opensea: { note: 'Collection page (history, items, holders).' }, scan: { note: 'Contract details and transactions.' }, site: { note: 'Site linked to the project.' } },
+      mint: { title: 'Mint widget (demo)' },
+      code: { title: 'Code explorer ' },
+      media: { title: 'Media', desc: 'Historical video & screenshots (NFE, TrumpXBiden). Click to enlarge.' },
+      trumpxbiden :{title:'trumpxbiden', desc: 'Experimental game, still offline: the objective is to take as much crypto as you can till winning a race, the idea was based on the Trump and Biden elctions'},
+      footer: { tail: 'More about Web3 ' }
+    }
+  };
+
+  function $all(sel, root=document){ return [...root.querySelectorAll(sel)]; }
+  function applyI18N(lang){
+    const dict = I18N[lang];
+    document.documentElement.setAttribute('lang', lang);
+    $all('[data-i18n]').forEach(el => {
+      const path = el.getAttribute('data-i18n').split('.');
+      let val = dict; for(const k of path){ val = val?.[k]; }
+      if(typeof val === 'string'){ el.innerHTML = val; }
+    });
+  }
+  function setLang(lang){
+    localStorage.setItem('nfe_lang', lang);
+    document.getElementById('lang-it').setAttribute('aria-pressed', String(lang==='it'));
+    document.getElementById('lang-en').setAttribute('aria-pressed', String(lang==='en'));
+    applyI18N(lang);
+  }
+  document.getElementById('lang-it').addEventListener('click', ()=> setLang('it'));
+  document.getElementById('lang-en').addEventListener('click', ()=> setLang('en'));
+
+  // Lightbox
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbVideo = document.getElementById('lb-video');
+  const lbCap = document.getElementById('lb-cap');
+  document.getElementById('lb-close').addEventListener('click', ()=> lb.close());
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lb.open) lb.close(); });
+  function openLightbox(m){
+    lbImg.style.display = 'none'; lbVideo.style.display = 'none';
+    if(m.type==='img'){ lbImg.src = m.src; lbImg.alt = m.cap; lbImg.style.display='block'; }
+    else { lbVideo.src = m.src; lbVideo.style.display='block'; lbVideo.play(); }
+    lbCap.textContent = m.cap; lb.showModal();
+  }
+
+  function renderGallery(lang){
+    const g = document.getElementById('gallery'); g.innerHTML = '';
+    MEDIA.forEach(m0=>{
+      const m = { ...m0, cap: m0.i18n[lang].cap };
+      const fig = document.createElement('figure');
+      fig.innerHTML = `${m.type==='img' ? `<img src="${m.src}" alt="${m.cap}" loading="lazy" width="${m.w}" height="${m.h}">` : `<video src="${m.src}" muted playsinline preload="metadata"></video>`}<figcaption>${m.cap}</figcaption>`;
+      fig.addEventListener('click', ()=> openLightbox(m));
+      g.appendChild(fig);
+    });
+  }
+
+  // Populate UI & code
+  function initFromConfig(){
+    document.getElementById('addr').textContent = NFE_CONFIG.CONTRACT_ADDRESS;
+    document.getElementById('net').textContent = `${NFE_CONFIG.NETWORK.NAME} • ${NFE_CONFIG.NETWORK.SYMBOL}`;
+    document.getElementById('name').textContent = NFE_CONFIG.NFT_NAME;
+    document.getElementById('symbol').textContent = NFE_CONFIG.SYMBOL;
+    document.getElementById('max').textContent = String(NFE_CONFIG.MAX_SUPPLY);
+    document.getElementById('cost').textContent = `${NFE_CONFIG.DISPLAY_COST} ${NFE_CONFIG.NETWORK.SYMBOL}`;
+    const a = document.getElementById('opensea'); a.href = NFE_CONFIG.MARKETPLACE_LINK; a.textContent = NFE_CONFIG.MARKETPLACE_LINK.replace('https://','');
+    // code tabs
+    const cfg = JSON.stringify(NFE_CONFIG, null, 2);
+    let cur = 'cfg';
+    const BOX = document.getElementById('codebox');
+    const MAP = { abi: ABI_EXCERPT, cfg };
+    function setTab(k){ cur = k; BOX.textContent = MAP[k]; document.getElementById('t-cfg').setAttribute('aria-selected', String(k==='cfg')); document.getElementById('t-abi').setAttribute('aria-selected', String(k==='abi')); }
+    document.getElementById('t-cfg').onclick = ()=> setTab('cfg');
+    document.getElementById('t-abi').onclick = ()=> setTab('abi');
+    setTab('cfg');
+  }
+
+  // Read-only supply fetch → updates stats + progress
+  async function fetchSupply(){
+    const url = (document.getElementById('rpc').value || 'https://polygon-rpc.com').trim();
+    const provider = new ethers.providers.JsonRpcProvider(url);
+    const abi = ["function totalSupply() view returns (uint256)"]; 
+    const c = new ethers.Contract(NFE_CONFIG.CONTRACT_ADDRESS, abi, provider);
+    const mintedEl = document.getElementById('minted');
+    const prog = document.getElementById('prog');
+    try{
+      const sup = await c.totalSupply();
+      const minted = Number(sup.toString());
+      const max = Number(NFE_CONFIG.MAX_SUPPLY);
+      const pct = Math.max(0, Math.min(100, Math.round((minted/max)*100)));
+      mintedEl.textContent = String(minted);
+      prog.style.width = pct + '%';
+    }catch(err){
+      mintedEl.textContent = 'n/d';
+      prog.style.width = '0%';
+      console.warn('totalSupply failed', err);
+    }
+  }
+
+  document.getElementById('fetch-supply').addEventListener('click', fetchSupply);
+  document.getElementById('copy-addr').addEventListener('click', ()=>{ navigator.clipboard.writeText(NFE_CONFIG.CONTRACT_ADDRESS); });
+
+  // Init
+  (function(){
+    document.getElementById('y').textContent = new Date().getFullYear();
+    const lang = localStorage.getItem('nfe_lang') || (localStorage.getItem('lang')||'it');
+    setLang(lang);
+    renderGallery(lang);
+    initFromConfig();
+  })();
+  </script>
+</body>
+</html>
